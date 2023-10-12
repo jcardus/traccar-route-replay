@@ -4,6 +4,8 @@
 
 <script>
 import mapboxgl from 'mapbox-gl'
+import { TripsLayer } from '@deck.gl/geo-layers'
+import { DeckOverlay } from '@deck.gl/mapbox'
 export default {
   name: 'IndexPage',
   mounted () {
@@ -14,7 +16,25 @@ export default {
       center: [-74.5, 40], // starting position [lng, lat]
       zoom: 9 // starting zoom
     })
-    map.on('load')
+    const data = {}
+    const deckOverlay = new DeckOverlay({
+      layers: [
+        new TripsLayer({
+          id: 'trips',
+          data,
+          getPath: d => d.path,
+          getTimestamps: d => d.timestamps,
+          opacity: 0.3,
+          widthMinPixels: 2,
+          rounded: true,
+          trailLength,
+          currentTime: time,
+          shadowEnabled: false
+        })
+      ]
+    })
+    map.addControl(deckOverlay)
+    map.addControl(new mapboxgl.NavigationControl())
   }
 }
 </script>

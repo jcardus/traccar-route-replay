@@ -1,4 +1,7 @@
 export default {
+  router: {
+    base: '/traccar-route-replay/'
+  },
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
 
