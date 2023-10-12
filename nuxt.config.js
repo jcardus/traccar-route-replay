@@ -7,7 +7,7 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'traccar-route-replay',
+    title: 'Route Replay ' + process.env.npm_package_version,
     htmlAttrs: {
       lang: 'en'
     },
