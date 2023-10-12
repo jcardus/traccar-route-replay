@@ -5,6 +5,10 @@ export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
 
+  env: {
+    MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN
+  },
+
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     title: 'Route Replay ' + process.env.npm_package_version,
@@ -24,6 +28,8 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
+    'mapbox-gl/dist/mapbox-gl.css',
+    '@assets/main.css'
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
