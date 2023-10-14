@@ -57,6 +57,7 @@ jobs:
         env:
           # Setting an environment variable with the value of a configuration variable
           MAPBOX_ACCESS_TOKEN: ${{ vars.MAPBOX_ACCESS_TOKEN }}
+          MAPTILER_KEY: ${{ vars.MAPTILER_KEY }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
