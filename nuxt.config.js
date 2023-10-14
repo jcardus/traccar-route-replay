@@ -32,8 +32,7 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-    // 'maplibre-gl/dist/maplibre-gl.css',
-    'mapbox-gl/dist/mapbox-gl.css',
+    'maplibre-gl/dist/maplibre-gl.css',
     '@assets/main.css',
     'mapboxgl-timeline/dist/style.css',
     'vue-loading-overlay/dist/vue-loading.css'
