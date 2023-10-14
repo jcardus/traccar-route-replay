@@ -1,6 +1,8 @@
 export const state = {
   session: null,
-  devices: []
+  devices: [],
+  timestamps: [],
+  path: []
 }
 export const getters = {
   session: state => state.session,
@@ -14,6 +16,17 @@ export const actions = {
     await dispatch('getDevices')
     commit('SET_SESSION', await this.$axios.$get('session'))
     commit('SET_DEVICES', await this.$axios.$get('devices'))
+  },
+  async getPath ({ commit }) {
+    const from = new Date(this.date).toISOString()
+    const to = new Date(new Date(this.date).getTime() + 1000 * 60 * 60 * 24).toISOString()
+    await this.$store.dispatch('getUserData')
+    const device = this.devices[2]
+    this.route = await this.$axios.$get(`/reports/route?deviceId=${device.id}&from=${from}&to=${to}&type=route&type=trips`)
+    const path = this.route.map(p => [p.longitude, p.latitude])
+    const timestamps = this.route.map(p => new Date(p.fixTime).getTime())
+    commit('SET_PATH', path)
+    commit('SET_TIMESTAMPS', timestamps)
   }
 }
 export const mutations = {
@@ -22,5 +35,11 @@ export const mutations = {
   },
   SET_DEVICES (state, devices) {
     state.devices = devices
+  },
+  SET_TIMESTAMPS (state, timestamps) {
+    state.timestamps = timestamps
+  },
+  SET_PATH (state, path) {
+    state.path = path
   }
 }

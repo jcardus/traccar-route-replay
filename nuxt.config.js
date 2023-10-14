@@ -9,7 +9,8 @@ export default {
   target: 'static',
 
   env: {
-    MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN
+    MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN,
+    MAPTILER_KEY: process.env.MAPTILER_KEY
   },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
@@ -31,8 +32,9 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-    'mapbox-gl/dist/mapbox-gl.css',
-    '@assets/main.css'
+    'maplibre-gl/dist/maplibre-gl.css',
+    '@assets/main.css',
+    'mapboxgl-timeline/dist/style.css'
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins

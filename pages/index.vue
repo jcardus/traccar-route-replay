@@ -1,18 +1,37 @@
 <template>
-  <div id="map" style="height: 100%; width: 100%" />
+  <div style="height: 100%; width: 100%">
+    <div id="map" style="height: 100%; width: 100%" />
+    <div id="slider" ref="slider" class="maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl-timeline">
+      <div class="mapboxgl-ctrl-timeline__control">
+        <button
+          class="mapboxgl-ctrl-timeline__toggler"
+          :class="playing ? 'running' : ''"
+          @click="playing = !playing"
+        />
+        <input
+          class="
+          mapboxgl-ctrl-timeline__slider"
+          type="range"
+        >
+      </div>
+      <div class="mapboxgl-ctrl-timeline__label">
+        {{ new Date().toLocaleString() }}
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-import mapboxgl from 'mapbox-gl'
+import maplibregl from 'maplibre-gl'
 import { TripsLayer } from '@deck.gl/geo-layers'
-import { MapboxOverlay } from '@deck.gl/mapbox'
+// import { MapboxOverlay } from '@deck.gl/mapbox'
 import { mapGetters } from 'vuex'
-import bbox from '@turf/bbox'
-import { lineString } from '@turf/helpers'
+// const animationSpeed = 1
+// import bbox from '@turf/bbox'
+// import { lineString } from '@turf/helpers'
 
 // const data = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json'
 const trailLength = 2 * 60 * 60 * 1000
-// const animationSpeed = 1
 
 let map
 let deckOverlay
@@ -32,48 +51,48 @@ export default {
   name: 'IndexPage',
   data () {
     return {
+      playing: false,
       time: 0,
       device: {},
       date: new Date().getTime() - 1000 * 60 * 60 * 24,
       loopLength: 1800,
       route: [],
       i: 0,
-      timestamps: []
+      timestamps: [],
+      curTime: '00:00'
     }
   },
   computed: {
     ...mapGetters(['devices'])
   },
-  async mounted () {
-    mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
-    map = new mapboxgl.Map({
+  mounted () {
+    // mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
+    map = new maplibregl.Map({
       container: 'map', // container ID
-      style: 'mapbox://styles/mapbox/streets-v12', // style URL
-      zoom: 9 // starting zoom
+      style: `https://api.maptiler.com/maps/basic-v2/style.json?key=${process.env.MAPTILER_KEY}`,
+      // style: 'mapbox://styles/mapbox/streets-v12', // style URL
+      zoom: localStorage.getItem('zoom'),
+      center: localStorage.getItem('center') ? JSON.parse(localStorage.getItem('center')) : [0, 0]
     })
-    map.addControl(new mapboxgl.NavigationControl())
-    const from = new Date(this.date).toISOString()
-    const to = new Date(new Date(this.date).getTime() + 1000 * 60 * 60 * 24).toISOString()
-    await this.$store.dispatch('getUserData')
-    const device = this.devices[2]
-    this.route = await this.$axios.$get(`/reports/route?deviceId=${device.id}&from=${from}&to=${to}&type=route&type=trips`)
-    const path = this.route.map(p => [p.longitude, p.latitude])
-    const timestamps = this.route.map(p => new Date(p.fixTime).getTime())
-    props.data = [{
-      path,
-      timestamps
-    }]
-    map.fitBounds(bbox(lineString(path)))
-    deckOverlay = new MapboxOverlay({
+    map.addControl(new maplibregl.NavigationControl())
+    map.on('moveend', () => {
+      localStorage.setItem('center', JSON.stringify(map.getCenter()))
+      localStorage.setItem('zoom', map.getZoom())
+    })
+    map.addControl({ onAdd: () => this.$refs.slider }, 'top-left')
+    // map.fitBounds(bbox(lineString(path)))
+    /* deckOverlay = new MapboxOverlay({
       layers: [new TripsLayer({ ...props, currentTime: timestamps.slice(-1)[0] })]
     })
+
     map.addSource('route', {
       type: 'geojson',
       data: lineString(path)
     })
-    // map.addLayer({ id: 'route', type: 'line', source: 'route' })
+    map.addLayer({ id: 'route', type: 'line', source: 'route' })
     map.addControl(deckOverlay)
-    this.setTime()
+    */
+    // this.setTime()
   },
   methods: {
     setTime () {
