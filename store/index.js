@@ -29,6 +29,7 @@ export const actions = {
     const timestamps = route.map(p => new Date(p.fixTime).getTime())
     commit('SET_PATH', path)
     commit('SET_TIMESTAMPS', timestamps)
+    this.loading = false
   }
 }
 export const mutations = {

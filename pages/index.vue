@@ -66,13 +66,22 @@ export default {
     ...mapGetters(['devices', 'path', 'timestamps'])
   },
   watch: {
+    path () {
+      this.loading = false
+      this.addLayers()
+      map.fitBounds(bbox(lineString(this.path)))
+    },
     playing () {
       if (this.playing) {
+        props.data = [{
+          path: this.path,
+          timestamps: this.timestamps
+        }]
         this.start()
       }
     }
   },
-  async mounted () {
+  mounted () {
     this.loading = true
     map = new maplibregl.Map({
       container: 'map', // container ID
@@ -81,32 +90,33 @@ export default {
       zoom: localStorage.getItem('zoom'),
       center: localStorage.getItem('center') ? JSON.parse(localStorage.getItem('center')) : [0, 0]
     })
-    map.addControl(new maplibregl.NavigationControl())
     map.on('moveend', () => {
       localStorage.setItem('center', JSON.stringify(map.getCenter()))
       localStorage.setItem('zoom', map.getZoom())
     })
+    map.on('load', () => this.$store.dispatch('getPath'))
+    map.addControl(new maplibregl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-left')
-    await this.$store.dispatch('getPath')
-    map.fitBounds(bbox(lineString(this.path)))
-    props.data = [{
-      path: this.path,
-      timestamps: this.timestamps
-    }]
-
-    map.addSource('route', {
-      type: 'geojson',
-      data: lineString(this.path)
-    })
-    map.addLayer({
-      id: 'route',
-      type: 'line',
-      source: 'route'
-    })
     map.addControl(overlay)
-    this.loading = false
   },
   methods: {
+    addLayers () {
+      if (!map.getSource('route')) {
+        map.addSource('route', {
+          type: 'geojson',
+          data: lineString(this.path)
+        })
+      } else {
+        map.getSource('route').setData()
+      }
+      if (!map.getLayer('route')) {
+        map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route'
+        })
+      }
+    },
     start () {
       if (this.i < this.path.length) {
         props.currentTime = this.timestamps[this.i++]
