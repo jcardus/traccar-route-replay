@@ -1,5 +1,6 @@
 <template>
   <div style="height: 100%; width: 100%">
+    <loading :active="loading" />
     <div id="map" style="height: 100%; width: 100%" />
     <div id="slider" ref="slider" class="maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl-timeline">
       <div class="mapboxgl-ctrl-timeline__control">
@@ -29,6 +30,7 @@ import { mapGetters } from 'vuex'
 import bbox from '@turf/bbox'
 import { lineString } from '@turf/helpers'
 import { MapboxOverlay } from '@deck.gl/mapbox'
+import Loading from 'vue-loading-overlay'
 
 // const data = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json'
 const trailLength = 2 * 60 * 60 * 1000
@@ -49,8 +51,10 @@ const props = {
 }
 export default {
   name: 'IndexPage',
+  components: { Loading },
   data () {
     return {
+      loading: false,
       playing: false,
       time: 0,
       device: {},
@@ -65,6 +69,7 @@ export default {
     ...mapGetters(['devices', 'path', 'timestamps'])
   },
   async mounted () {
+    this.loading = true
     map = new maplibregl.Map({
       container: 'map', // container ID
       style: `https://api.maptiler.com/maps/basic-v2/style.json?key=${process.env.MAPTILER_KEY}`,
@@ -80,17 +85,28 @@ export default {
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-left')
     await this.$store.dispatch('getPath')
     map.fitBounds(bbox(lineString(this.path)))
-    props.data = { path: this.path, timestamps: this.timestamps }
+    props.data = {
+      path: this.path,
+      timestamps: this.timestamps
+    }
     deckOverlay = new MapboxOverlay({
-      layers: [new TripsLayer({ ...props, currentTime: this.timestamps.slice(-1)[0] })]
+      layers: [new TripsLayer({
+        ...props,
+        currentTime: this.timestamps.slice(-1)[0]
+      })]
     })
 
     map.addSource('route', {
       type: 'geojson',
       data: lineString(this.path)
     })
-    map.addLayer({ id: 'route', type: 'line', source: 'route' })
+    map.addLayer({
+      id: 'route',
+      type: 'line',
+      source: 'route'
+    })
     map.addControl(deckOverlay)
+    this.loading = false
   },
   methods: {
     start () {

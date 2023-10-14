@@ -34,7 +34,8 @@ export default {
   css: [
     'maplibre-gl/dist/maplibre-gl.css',
     '@assets/main.css',
-    'mapboxgl-timeline/dist/style.css'
+    'mapboxgl-timeline/dist/style.css',
+    'vue-loading-overlay/dist/vue-loading.css'
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
