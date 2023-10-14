@@ -24,11 +24,11 @@
 <script>
 import maplibregl from 'maplibre-gl'
 import { TripsLayer } from '@deck.gl/geo-layers'
-// import { MapboxOverlay } from '@deck.gl/mapbox'
 import { mapGetters } from 'vuex'
 // const animationSpeed = 1
-// import bbox from '@turf/bbox'
-// import { lineString } from '@turf/helpers'
+import bbox from '@turf/bbox'
+import { lineString } from '@turf/helpers'
+import { MapboxOverlay } from '@deck.gl/mapbox'
 
 // const data = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json'
 const trailLength = 2 * 60 * 60 * 1000
@@ -58,15 +58,13 @@ export default {
       loopLength: 1800,
       route: [],
       i: 0,
-      timestamps: [],
       curTime: '00:00'
     }
   },
   computed: {
-    ...mapGetters(['devices'])
+    ...mapGetters(['devices', 'path', 'timestamps'])
   },
-  mounted () {
-    // mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
+  async mounted () {
     map = new maplibregl.Map({
       container: 'map', // container ID
       style: `https://api.maptiler.com/maps/basic-v2/style.json?key=${process.env.MAPTILER_KEY}`,
@@ -80,27 +78,27 @@ export default {
       localStorage.setItem('zoom', map.getZoom())
     })
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-left')
-    // map.fitBounds(bbox(lineString(path)))
-    /* deckOverlay = new MapboxOverlay({
-      layers: [new TripsLayer({ ...props, currentTime: timestamps.slice(-1)[0] })]
+    await this.$store.dispatch('getPath')
+    map.fitBounds(bbox(lineString(this.path)))
+    props.data = { path: this.path, timestamps: this.timestamps }
+    deckOverlay = new MapboxOverlay({
+      layers: [new TripsLayer({ ...props, currentTime: this.timestamps.slice(-1)[0] })]
     })
 
     map.addSource('route', {
       type: 'geojson',
-      data: lineString(path)
+      data: lineString(this.path)
     })
     map.addLayer({ id: 'route', type: 'line', source: 'route' })
     map.addControl(deckOverlay)
-    */
-    // this.setTime()
   },
   methods: {
-    setTime () {
-      if (this.i < this.route.length) {
+    start () {
+      if (this.i < this.path.length) {
         deckOverlay.setProps({
           layers: [new TripsLayer({
             ...props,
-            currentTime: new Date(this.route[this.i++].fixTime).getTime()
+            currentTime: this.timestamps[this.i++]
           })]
         })
         window.requestAnimationFrame(this.setTime)
