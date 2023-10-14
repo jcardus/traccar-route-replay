@@ -76,25 +76,21 @@ export default {
   watch: {
     i () {
       props.currentTime = this.timestamps[this.i]
-      overlay.setProps({
-        layers: [new TripsLayer({ ...props })]
-      })
+      overlay.setProps({ layers: [new TripsLayer(props)] })
     },
     path () {
       this.loading = false
       this.addLayers()
       map.fitBounds(bbox(lineString(this.path)), fitBounds)
       props.trailLength = this.timestamps.slice(-1)[0] - this.timestamps[0]
+      props.data = [{
+        path: this.path,
+        timestamps: this.timestamps
+      }]
     },
     playing () {
       if (this.playing) {
-        props.data = [{
-          path: this.path,
-          timestamps: this.timestamps
-        }]
-        if (this.i + 1 === this.path.length) {
-          this.i = 0
-        }
+        if (this.i + 1 === this.path.length) { this.i = 0 }
         this.play()
       }
     }
