@@ -10,13 +10,16 @@
           @click="playing = !playing"
         />
         <input
-          class="
-          mapboxgl-ctrl-timeline__slider"
+          v-model="currentTime"
+          class="mapboxgl-ctrl-timeline__slider"
           type="range"
+          :min="timestamps[0]"
+          :max="timestamps.slice(-1)[0]"
+          style="width: 400px"
         >
       </div>
       <div class="mapboxgl-ctrl-timeline__label">
-        {{ new Date().toLocaleString() }}
+        {{ timestamps[i] && new Date(timestamps[i]).toLocaleString() }}
       </div>
     </div>
   </div>
@@ -30,9 +33,9 @@ import bbox from '@turf/bbox'
 import { lineString } from '@turf/helpers'
 import { MapboxOverlay } from '@deck.gl/mapbox'
 import Loading from 'vue-loading-overlay'
+import { closest } from '@/utils'
+import { fitBounds } from '@/utils/options'
 
-// const data = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json'
-const trailLength = 2 * 60 * 60 * 1000
 const overlay = new MapboxOverlay({
   layers: []
 })
@@ -44,14 +47,15 @@ const props = {
   id: 'trips',
   getPath: d => d.path,
   getTimestamps: d => d.timestamps,
-  opacity: 1,
+  opacity: 0.9,
   widthMinPixels: 8,
   rounded: true,
   joinRounded: true,
-  trailLength,
+  trailLength: 0,
   shadowEnabled: true,
   getColor: [253, 128, 93]
 }
+
 export default {
   name: 'IndexPage',
   components: { Loading },
@@ -63,13 +67,24 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['devices', 'path', 'timestamps'])
+    ...mapGetters(['devices', 'path', 'timestamps']),
+    currentTime: {
+      get () { return this.timestamps[this.i] },
+      set (time) { this.i = closest(this.timestamps, time) }
+    }
   },
   watch: {
+    i () {
+      props.currentTime = this.timestamps[this.i]
+      overlay.setProps({
+        layers: [new TripsLayer({ ...props })]
+      })
+    },
     path () {
       this.loading = false
       this.addLayers()
-      map.fitBounds(bbox(lineString(this.path)))
+      map.fitBounds(bbox(lineString(this.path)), fitBounds)
+      props.trailLength = this.timestamps.slice(-1)[0] - this.timestamps[0]
     },
     playing () {
       if (this.playing) {
@@ -77,7 +92,10 @@ export default {
           path: this.path,
           timestamps: this.timestamps
         }]
-        this.start()
+        if (this.i + 1 === this.path.length) {
+          this.i = 0
+        }
+        this.play()
       }
     }
   },
@@ -117,15 +135,12 @@ export default {
         })
       }
     },
-    start () {
-      if (this.i < this.path.length) {
-        props.currentTime = this.timestamps[this.i++]
-        overlay.setProps({
-          layers: [new TripsLayer({ ...props })]
-        })
-        window.requestAnimationFrame(this.start)
+    play () {
+      if (this.i + 1 < this.path.length && this.playing) {
+        this.i++
+        window.requestAnimationFrame(this.play)
       } else {
-        this.i = 0
+        this.playing = false
       }
     }
   }
