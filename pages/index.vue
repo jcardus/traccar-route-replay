@@ -123,8 +123,10 @@ export default {
     },
     path () {
       this.loading = false
-      this.addLayers()
-      map.fitBounds(bbox(lineString(this.path)), fitBounds)
+      if (this.path && this.path.length) {
+        this.addLayers()
+        map.fitBounds(bbox(lineString(this.path)), fitBounds)
+      }
     },
     playing () {
       if (this.playing) {
@@ -185,22 +187,20 @@ export default {
       ])
     },
     addLayers () {
-      if (this.path && this.path.length) {
-        if (!map.getSource('route')) {
-          map.addSource('route', {
-            type: 'geojson',
-            data: lineString(this.path)
-          })
-        } else {
-          map.getSource('route').setData()
-        }
-        if (!map.getLayer('route')) {
-          map.addLayer({
-            id: 'route',
-            type: 'line',
-            source: 'route'
-          })
-        }
+      if (!map.getSource('route')) {
+        map.addSource('route', {
+          type: 'geojson',
+          data: lineString(this.path)
+        })
+      } else {
+        map.getSource('route').setData()
+      }
+      if (!map.getLayer('route')) {
+        map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route'
+        })
       }
     },
     play () {
