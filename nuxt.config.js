@@ -10,7 +10,8 @@ export default {
 
   env: {
     MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN,
-    MAPTILER_KEY: process.env.MAPTILER_KEY
+    MAPTILER_KEY: process.env.MAPTILER_KEY,
+    COUNTRY: process.env.COUNTRY
   },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
@@ -32,7 +33,9 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-    'maplibre-gl/dist/maplibre-gl.css',
+    // 'maplibre-gl/dist/maplibre-gl.css',
+    'mapbox-gl/dist/mapbox-gl.css',
+    'mapbox-gl-style-switcher/styles.css',
     '@assets/main.css',
     'mapboxgl-timeline/dist/style.css',
     'vue-loading-overlay/dist/vue-loading.css'
@@ -54,7 +57,8 @@ export default {
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios'
+    '@nuxtjs/axios',
+    '@nuxtjs/i18n'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
