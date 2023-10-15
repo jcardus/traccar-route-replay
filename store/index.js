@@ -23,10 +23,11 @@ export const actions = {
     commit('SET_DEVICES', await this.$axios.$get('devices'))
   },
   async getPath ({ commit, dispatch, state }) {
-    const from = new Date(new Date().getTime() - 1000 * 60 * 60 * 24).toISOString()
-    const to = new Date(new Date().getTime() + 1000 * 60 * 60 * 24).toISOString()
+    const query = new URLSearchParams(window.location.search)
+    const from = new Date(query.get('from') || new Date().getTime() - 1000 * 60 * 60 * 24).toISOString()
+    const to = new Date(query.get('to') || new Date().getTime() + 1000 * 60 * 60 * 24).toISOString()
     await dispatch('getUserData')
-    const device = state.devices[2]
+    const device = state.devices.find(d => d.id === parseInt(query.get('deviceId'))) || state.devices[0]
     const route = await this.$axios.$get(`/reports/route?deviceId=${device.id}&from=${from}&to=${to}&type=route&type=trips`)
     commit('SET_ROUTE', route)
     commit('SET_PATH', route.map(p => [p.longitude, p.latitude]))

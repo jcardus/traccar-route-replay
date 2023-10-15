@@ -3,6 +3,9 @@
     <loading :active="loading" />
     <div id="map" style="height: 100%; width: 100%" />
     <div ref="slider" class="mapboxgl-ctrl mapboxgl-ctrl-group mapboxgl-ctrl-timeline">
+      <div class="mapboxgl-ctrl-timeline__label">
+        <b>{{ device && device.name }}</b>
+      </div>
       <div class="mapboxgl-ctrl-timeline__control">
         <button
           class="mapboxgl-ctrl-timeline__toggler"
@@ -69,11 +72,15 @@ export default {
       loading: false,
       playing: false,
       i: 0,
-      playSpeed: 400
+      playSpeed: 400,
+      follow: false
     }
   },
   computed: {
     ...mapGetters(['devices', 'path', 'timestamps', 'route']),
+    device () {
+      return this.devices.find(d => d.id === parseInt(this.$route.query.deviceId)) || this.devices[0]
+    },
     currentTime: {
       get () { return this.timestamps[this.i] },
       set (time) { this.i = closest(this.timestamps, time) }
