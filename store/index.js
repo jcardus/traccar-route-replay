@@ -4,23 +4,22 @@ export const state = {
   timestamps: [],
   path: [],
   headings: [],
-  route: []
+  route: [],
+  geofences: []
 }
 export const getters = {
-  session: state => state.session,
   devices: state => state.devices,
   path: state => state.path,
   timestamps: state => state.timestamps,
-  route: state => state.route
+  route: state => state.route,
+  geofences: state => state.geofences
 }
 export const actions = {
-  async getDevices ({ commit }, userId) {
-    commit('SET_DEVICES', await this.$axios.$get('devices' + (userId ? `?userId=${userId}` : '')))
-  },
-  async getUserData ({ commit, dispatch }) {
-    await dispatch('getDevices')
-    commit('SET_SESSION', await this.$axios.$get('session'))
+  async getUserData ({ commit }) {
     commit('SET_DEVICES', await this.$axios.$get('devices'))
+    commit('SET_SESSION', await this.$axios.$get('session'))
+    commit('SET_SESSION', await this.$axios.$get('session'))
+    commit('SET_GEOFENCES', await this.$axios.$get('/geofences'))
   },
   async getPath ({ commit, dispatch, state }) {
     const query = new URLSearchParams(window.location.search)
@@ -50,5 +49,8 @@ export const mutations = {
   },
   SET_ROUTE (state, route) {
     state.route = route
+  },
+  SET_GEOFENCES (state, geofences) {
+    state.geofences = geofences
   }
 }
