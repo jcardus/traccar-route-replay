@@ -69,17 +69,5 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-  },
-  i18n: {
-    locales: ['es', 'en', 'fr'],
-    vueI18n: {
-      fallbackLocale: 'en',
-      defaultLocale: 'en',
-      messages: {
-        es: {
-          'Follow vehicle': 'Seguir vehículo'
-        }
-      }
-    }
   }
 }
