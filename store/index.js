@@ -5,14 +5,16 @@ export const state = {
   path: [],
   headings: [],
   route: [],
-  geofences: []
+  geofences: [],
+  showTerrain: false
 }
 export const getters = {
   devices: state => state.devices,
   path: state => state.path,
   timestamps: state => state.timestamps,
   route: state => state.route,
-  geofences: state => state.geofences
+  geofences: state => state.geofences,
+  showTerrain: state => state.showTerrain
 }
 export const actions = {
   async getUserData ({ commit }) {
@@ -35,6 +37,9 @@ export const actions = {
   }
 }
 export const mutations = {
+  TOGGLE_TERRAIN (state) {
+    state.showTerrain = !state.showTerrain
+  },
   SET_SESSION (state, session) {
     state.session = session
   },

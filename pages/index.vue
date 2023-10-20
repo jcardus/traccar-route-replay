@@ -27,17 +27,17 @@
     </div>
     <div ref="speed" class="mapboxgl-ctrl mapboxgl-ctrl-group">
       <div style="padding: 5px" class="mapboxgl-ctrl-timeline__label">
-        <input id="1x" v-model="playSpeed" type="radio" name="speed" value="400">
-        <label for="1x">1x</label>
-        <input id="2x" v-model="playSpeed" type="radio" name="speed" value="200">
-        <label for="2x">2x</label>
-        <input id="5x" v-model="playSpeed" type="radio" name="speed" value="80">
-        <label for="5x">5x</label>
+        <select id="speeds" v-model="playSpeed" style="font-size: 1rem;">
+          <option v-for="option in speeds" :key="option.value" :value="option.value">
+            {{ option.text }}
+          </option>
+        </select>
         <input id="follow" v-model="follow" type="checkbox">
         <label for="follow">{{ $t('Follow vehicle') }}</label>
-        <input id="terrain" v-model="terrain" type="checkbox">
-        <label for="terrain">{{ $t('Terrain') }}</label>
       </div>
+    </div>
+    <div ref="styleSwitcher">
+      <style-switcher @changed="styleChanged" />
     </div>
     <canvas ref="sliderLine" height="40" />
   </div>
@@ -52,9 +52,9 @@ import Loading from 'vue-loading-overlay'
 import { ScenegraphLayer } from '@deck.gl/mesh-layers'
 import mapboxgl from 'mapbox-gl'
 // import maplibregl from 'maplibre-gl'
-import { MapboxStyleSwitcherControl } from 'mapbox-gl-style-switcher'
 import { closest } from '@/utils'
 import { fitBounds } from '@/utils/options'
+import StyleSwitcher from '@/components/style-switcher.vue'
 
 const overlay = new MapboxOverlay({ layers: [] })
 
@@ -66,21 +66,26 @@ const MODEL_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/e
 
 export default {
   name: 'IndexPage',
-  components: { Loading },
+  components: { Loading, StyleSwitcher },
   data () {
     return {
+      speeds: [
+        { text: '1x', value: 400 },
+        { text: '2x', value: 200 },
+        { text: '5x', value: 80 },
+        { text: '10x', value: 40 }
+      ],
       sliderWith: 400,
       loading: false,
       playing: false,
       i: 0,
       playSpeed: 400,
       follow: false,
-      terrain: false,
       sliderBackground: ''
     }
   },
   computed: {
-    ...mapGetters(['devices', 'path', 'timestamps', 'route']),
+    ...mapGetters(['devices', 'path', 'timestamps', 'route', 'showTerrain']),
     max () {
       return this.timestamps.slice(-1)[0]
     },
@@ -162,8 +167,8 @@ export default {
         this.play()
       }
     },
-    terrain () {
-      if (this.terrain) {
+    showTerrain () {
+      if (this.showTerrain) {
         map.addSource('mapbox-dem', {
           type: 'raster-dem',
           url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
@@ -201,11 +206,14 @@ export default {
     map.on('load', this.mapLoaded)
     map.addControl({ onAdd: () => this.$refs.speed }, 'top-right')
     map.addControl(new mapboxgl.NavigationControl())
-    map.addControl(new MapboxStyleSwitcherControl())
+    map.addControl({ onAdd: () => this.$refs.styleSwitcher })
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-left')
     map.addControl(overlay)
   },
   methods: {
+    styleChanged (style) {
+      map.setStyle(style.uri)
+    },
     updateSliderBackground () {
       const canvas = this.$refs.sliderLine
       if (canvas !== undefined && this.route) {
