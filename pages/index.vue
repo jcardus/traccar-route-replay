@@ -309,7 +309,15 @@ export default {
       map.addLayer({
         id: 'route',
         type: 'line',
-        source: 'route'
+        source: 'route',
+        paint: {
+          'line-color': '#888',
+          'line-width': 8
+        },
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        }
       })
     },
     play () {

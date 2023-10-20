@@ -71,9 +71,10 @@ export default {
   build: {
   },
   i18n: {
-    locales: ['es'],
+    locales: ['es', 'en', 'fr'],
     vueI18n: {
-      fallbackLocale: 'es',
+      fallbackLocale: 'en',
+      defaultLocale: 'en',
       messages: {
         es: {
           'Follow vehicle': 'Seguir vehículo'
