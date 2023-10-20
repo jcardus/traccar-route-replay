@@ -35,7 +35,6 @@ export default {
   css: [
     // 'maplibre-gl/dist/maplibre-gl.css',
     'mapbox-gl/dist/mapbox-gl.css',
-    'mapbox-gl-style-switcher/styles.css',
     '@assets/main.css',
     'mapboxgl-timeline/dist/style.css',
     'vue-loading-overlay/dist/vue-loading.css'
@@ -70,5 +69,16 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+  i18n: {
+    locales: ['es'],
+    vueI18n: {
+      fallbackLocale: 'es',
+      messages: {
+        es: {
+          'Follow vehicle': 'Seguir vehículo'
+        }
+      }
+    }
   }
 }

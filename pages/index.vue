@@ -2,31 +2,34 @@
   <div style="height: 100%; width: 100%">
     <loading :active="loading" />
     <div id="map" style="height: 100%; width: 100%" />
-    <div ref="slider" class="mapboxgl-ctrl mapboxgl-ctrl-group mapboxgl-ctrl-timeline">
+    <div
+      ref="slider"
+      class="mapboxgl-ctrl mapboxgl-ctrl-group mapboxgl-ctrl-timeline"
+      style="display: flex; width: calc(100vw - 20px); justify-content: center;"
+    >
       <div class="mapboxgl-ctrl-timeline__label">
         <b>{{ device && device.name }}</b>
       </div>
-      <div class="mapboxgl-ctrl-timeline__control">
+      <div class="mapboxgl-ctrl-timeline__control" style="flex-grow: 1">
         <button
           class="mapboxgl-ctrl-timeline__toggler"
           :class="playing ? 'running' : ''"
           @click="playing = !playing"
         />
         <input
+          ref="sliderInput"
           v-model="currentTime"
           class="mapboxgl-ctrl-timeline__slider"
           type="range"
           :min="min"
           :max="max"
-          :style="`background-image: url('${sliderBackground}'); width: ${sliderWith}px;`"
+          :style="`background-image: url('${sliderBackground}');`"
         >
       </div>
       <div class="mapboxgl-ctrl-timeline__label">
         {{ timestamps[i] && new Date(timestamps[i]).toLocaleString() }}
       </div>
-    </div>
-    <div ref="speed" class="mapboxgl-ctrl mapboxgl-ctrl-group">
-      <div style="padding: 5px" class="mapboxgl-ctrl-timeline__label">
+      <div class="ctrl-item">
         <select id="speeds" v-model="playSpeed" style="font-size: 1rem;">
           <option v-for="option in speeds" :key="option.value" :value="option.value">
             {{ option.text }}
@@ -39,7 +42,7 @@
     <div ref="styleSwitcher">
       <style-switcher @changed="styleChanged" />
     </div>
-    <canvas ref="sliderLine" height="40" />
+    <canvas ref="sliderLine" height="40" width="10000" />
   </div>
 </template>
 
@@ -75,7 +78,6 @@ export default {
         { text: '5x', value: 80 },
         { text: '10x', value: 40 }
       ],
-      sliderWith: 400,
       loading: false,
       playing: false,
       i: 0,
@@ -191,6 +193,7 @@ export default {
     }
   },
   mounted () {
+    new ResizeObserver(this.updateSliderBackground).observe(this.$refs.sliderInput)
     this.loading = true
     map = new mapboxgl.Map({
       container: 'map', // container ID
@@ -204,10 +207,9 @@ export default {
       localStorage.setItem('zoom', map.getZoom())
     })
     map.on('load', this.mapLoaded)
-    map.addControl({ onAdd: () => this.$refs.speed }, 'top-right')
+    map.addControl({ onAdd: () => this.$refs.slider }, 'top-right')
     map.addControl(new mapboxgl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.styleSwitcher })
-    map.addControl({ onAdd: () => this.$refs.slider }, 'top-left')
     map.addControl(overlay)
   },
   methods: {
@@ -237,6 +239,7 @@ export default {
             status = 0
           }
         })
+        this.drawLine(context, linePosition, this.$refs.sliderInput.clientWidth, -1)
         this.sliderBackground = canvas.toDataURL()
       }
     },
@@ -254,7 +257,7 @@ export default {
       context.stroke()
     },
     getEndIndex (date) {
-      return this.sliderWith * (new Date(date) - this.min) / (this.max - this.min)
+      return this.$refs.sliderInput.clientWidth * (new Date(date) - this.min) / (this.max - this.min)
     },
     newColoredLine (p, context, currentLinePosition, currentStatus) {
       const end = this.getEndIndex(p.fixTime)
@@ -320,3 +323,20 @@ export default {
   }
 }
 </script>
+<style>
+.ctrl-item {
+  --padding: 0.3rem;
+  --border: 1px solid #0002;
+  --width: auto;
+  --color-bg: #fff;
+  --color-text: #333;
+  --color-track: #0001;
+  background: var(--color-bg);
+  display: flex;
+  align-items: stretch;
+  color: var(--color-text);
+  border-left: var(--border);
+  padding: var(--padding) calc(2 * var(--padding));
+  font-size: 1rem;
+}
+</style>
