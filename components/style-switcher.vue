@@ -1,5 +1,12 @@
 <template>
   <div class="mapboxgl-ctrl mapboxgl-ctrl-group">
+    <button
+      id="styleButton"
+      type="button"
+      class="mapboxgl-ctrl-icon mapboxgl-style-switcher"
+      style="float: right"
+      @click="opened=!opened"
+    />
     <div ref="mapStyleContainer" class="mapboxgl-style-list" :style="`display: ${opened?'block':'none'}`">
       <button
         v-for="style in styles"
@@ -14,14 +21,11 @@
         <input id="terrain" type="checkbox" @click="$store.commit('TOGGLE_TERRAIN')">
         <label for="terrain">{{ $t('Terrain') }}</label>
       </button>
+      <button style="border-top: 1px solid #0002;">
+        <input id="signs" type="checkbox" @click="$store.commit('TOGGLE_SHOW_SIGNS')">
+        <label for="signs">{{ $t('Signs') }}</label>
+      </button>
     </div>
-    <button
-      id="styleButton"
-      :style="`display: ${opened?'none':'block'}`"
-      type="button"
-      class="mapboxgl-ctrl-icon mapboxgl-style-switcher"
-      @click="opened=true"
-    />
   </div>
 </template>
 

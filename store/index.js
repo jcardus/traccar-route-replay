@@ -6,7 +6,8 @@ export const state = {
   headings: [],
   route: [],
   geofences: [],
-  showTerrain: false
+  showTerrain: false,
+  showSigns: false
 }
 export const getters = {
   devices: state => state.devices,
@@ -14,7 +15,8 @@ export const getters = {
   timestamps: state => state.timestamps,
   route: state => state.route,
   geofences: state => state.geofences,
-  showTerrain: state => state.showTerrain
+  showTerrain: state => state.showTerrain,
+  showSigns: state => state.showSigns
 }
 export const actions = {
   async getUserData ({ commit }) {
@@ -39,6 +41,9 @@ export const actions = {
 export const mutations = {
   TOGGLE_TERRAIN (state) {
     state.showTerrain = !state.showTerrain
+  },
+  TOGGLE_SHOW_SIGNS (state) {
+    state.showSigns = !state.showSigns
   },
   SET_SESSION (state, session) {
     state.session = session

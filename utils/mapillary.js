@@ -37,7 +37,7 @@ export function getImage (p, course) {
     }
     if (images[box.properties.id] && images[box.properties.id].length) {
       const points = images[box.properties.id]
-        .filter(p => Math.abs(p.computed_compass_angle - course) < 10)
+        .filter(p => Math.abs(p.computed_compass_angle - course) < 8)
       if (points.length) {
         const nearest = nearestPoint(point(p), featureCollection(points.map(p => feature(p.computed_geometry))))
         return points[nearest.properties.featureIndex]

@@ -53,9 +53,11 @@
       <style-switcher @changed="styleChanged" />
     </div>
     <div ref="mapillary" class="mapboxgl-ctrl" style="width: 256px; height: 192px">
-      <img :src="imgSrc" alt="" @error="imgLoaded=true" @load="imgLoaded=true">
+      <span style="position: absolute; z-index: 2; left: 50%; background: white; padding-left: 5px; padding-right: 5px">
+        <a style="color: black" target="_blank" :href="`https://www.mapillary.com/app/?pKey=${imgId}`">{{ imgTime }}</a>
+      </span>
+      <div ref="mapillaryViewer" style="width: 100%; height: 100%" />
     </div>
-    <div ref="mapillary2" class="mapboxgl-ctrl" style="width: 256px; height: 192px" />
     <canvas ref="sliderLine" style="position: absolute; left:-100000px" height="40" width="10000" />
   </div>
 </template>
@@ -86,6 +88,8 @@ export default {
   components: { Loading, StyleSwitcher },
   data () {
     return {
+      imgId: 0,
+      imgTime: '',
       imgSrc: '',
       imgLoaded: true,
       speeds: [
@@ -103,7 +107,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['devices', 'path', 'timestamps', 'route', 'showTerrain']),
+    ...mapGetters(['devices', 'path', 'timestamps', 'route', 'showTerrain', 'showSigns']),
     max () {
       return this.timestamps.slice(-1)[0]
     },
@@ -191,6 +195,30 @@ export default {
           console.error(e)
         }
       }
+    },
+    showSigns () {
+      if (this.showSigns) {
+        map.addSource('signs', {
+          type: 'vector',
+          tiles: [
+            `https://tiles.mapillary.com/maps/vtp/mly_map_feature_traffic_sign/2/{z}/{x}/{y}?access_token=${process.env.MAPILLARY_ACCESS_TOKEN}`
+          ],
+          minzoom: 14,
+          maxzoom: 14
+        })
+        map.addLayer({
+          id: 'signs',
+          type: 'symbol',
+          'source-layer': 'traffic_sign',
+          source: 'signs',
+          layout: {
+            'icon-image': ['get', 'value']
+          }
+        })
+      } else {
+        map.removeLayer('signs')
+        map.removeSource('signs')
+      }
     }
   },
   mounted () {
@@ -212,17 +240,22 @@ export default {
     map.addControl(new mapboxgl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.styleSwitcher })
     // map.addControl({ onAdd: () => this.$refs.mapillary }, 'bottom-right')
-    map.addControl({ onAdd: () => this.$refs.mapillary2 }, 'bottom-right')
+    map.addControl({ onAdd: () => this.$refs.mapillary }, 'bottom-right')
     map.addControl(overlay)
-    viewer = new Viewer({ accessToken: process.env.MAPILLARY_ACCESS_TOKEN, container: this.$refs.mapillary2 })
+    viewer = new Viewer({
+      accessToken: process.env.MAPILLARY_ACCESS_TOKEN,
+      container: this.$refs.mapillaryViewer
+    })
   },
   methods: {
     checkImage () {
       const image = getImage(this.path[this.i], this.route[this.i].course)
-      if (image.thumb_256_url && this.imgSrc !== image.thumb_256_url && this.imgLoaded) {
-        this.imgLoaded = false
-        this.imgSrc = image.thumb_256_url
+      if (image.id && this.imgTime !== 'loading...') {
+        this.imgTime = 'loading...'
+        this.imgId = image.id
         viewer.moveTo(image.id)
+          .then(() => { this.imgTime = new Date(this.route[this.i].fixTime).toLocaleString() })
+          .catch((e) => { this.imgTime = e.message })
         // viewer.setCenter(this.route[this.i].course)
       }
     },
