@@ -10,6 +10,7 @@ const baseUrl = `https://graph.mapillary.com/images?access_token=${
 let bboxes
 const images = {}
 const cellSide = 1.5
+const maxImageDistance = 20 // meters
 export function init (bounds, path, map) {
   const { features } = squareGrid(bounds, cellSide, { mask: lineString(path) })
   bboxes = features
@@ -39,8 +40,14 @@ export function getImage (p, course) {
       const points = images[box.properties.id]
         .filter(p => Math.abs(p.computed_compass_angle - course) < 8)
       if (points.length) {
-        const nearest = nearestPoint(point(p), featureCollection(points.map(p => feature(p.computed_geometry))))
-        return points[nearest.properties.featureIndex]
+        const nearest = nearestPoint(
+          point(p),
+          featureCollection(points.map(p => feature(p.computed_geometry))),
+          { units: 'meters' }
+        )
+        if (nearest.properties.distanceToPoint < maxImageDistance) {
+          return points[nearest.properties.featureIndex]
+        }
       }
     }
   }

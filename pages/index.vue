@@ -203,7 +203,7 @@ export default {
           tiles: [
             `https://tiles.mapillary.com/maps/vtp/mly_map_feature_traffic_sign/2/{z}/{x}/{y}?access_token=${process.env.MAPILLARY_ACCESS_TOKEN}`
           ],
-          minzoom: 14,
+          minzoom: 6,
           maxzoom: 14
         })
         map.addLayer({
@@ -216,8 +216,12 @@ export default {
           }
         })
       } else {
-        map.removeLayer('signs')
-        map.removeSource('signs')
+        if (map.getLayer('signs')) {
+          map.removeLayer('signs')
+        }
+        if (map.getSource('signs')) {
+          map.removeSource('signs')
+        }
       }
     }
   },
@@ -236,6 +240,7 @@ export default {
       localStorage.setItem('zoom', map.getZoom())
     })
     map.on('load', this.mapLoaded)
+    map.on('styleimagemissing', this.styleImageMissing)
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-right')
     map.addControl(new mapboxgl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.styleSwitcher })
@@ -248,6 +253,13 @@ export default {
     })
   },
   methods: {
+    styleImageMissing (e) {
+      if (e.id.startsWith('regulatory')) {
+        const img = new Image(20, 20)
+        img.src = `signs/${e.id}.svg`
+        img.onload = () => !map.hasImage(e.id) && map.addImage(e.id, img)
+      }
+    },
     checkImage () {
       const image = getImage(this.path[this.i], this.route[this.i].course)
       if (image.id && this.imgTime !== 'loading...') {
