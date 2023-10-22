@@ -20,8 +20,9 @@ export default {
     return {
       type: 'Gauge',
       options: {
-        width: 90,
-        minorTicks: 5
+        width: 100,
+        minorTicks: 5,
+        max: 160
       },
       settings: {
         packages: ['gauge']

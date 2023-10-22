@@ -238,7 +238,7 @@ export default {
       localStorage.setItem('center', JSON.stringify(map.getCenter()))
       localStorage.setItem('zoom', map.getZoom())
     })
-    map.on('load', this.mapLoaded)
+    map.on('style.load', this.mapLoaded)
     map.on('styleimagemissing', this.styleImageMissing)
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-right')
     map.addControl({ onAdd: () => this.$refs.speedometer }, 'top-right')
