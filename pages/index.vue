@@ -80,8 +80,8 @@ mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
 const cameraAltitude = 2000
 let map
 let viewer
-
 const MODEL_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/google-3d/truck.gltf'
+const boundsPadding = 50 // px
 
 export default {
   name: 'IndexPage',
@@ -162,7 +162,7 @@ export default {
       if (this.path && this.path.length) {
         map.getSource('route').setData(lineString(this.path))
         const bounds = bbox(points(this.path))
-        map.fitBounds(bounds)
+        map.fitBounds(bounds, { padding: boundsPadding })
         this.updateSliderBackground()
         init(bounds, this.path, map)
         this.checkImage()
@@ -228,7 +228,6 @@ export default {
     this.loading = true
     map = new mapboxgl.Map({
       container: 'map', // container ID
-      // style: `https://api.maptiler.com/maps/basic-v2/style.json?key=${process.env.MAPTILER_KEY}`,
       style: 'mapbox://styles/mapbox/streets-v12', // style URL
       zoom: localStorage.getItem('zoom'),
       center: localStorage.getItem('center') ? JSON.parse(localStorage.getItem('center')) : [0, 0]
@@ -242,7 +241,6 @@ export default {
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-right')
     map.addControl(new mapboxgl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.styleSwitcher })
-    // map.addControl({ onAdd: () => this.$refs.mapillary }, 'bottom-right')
     map.addControl({ onAdd: () => this.$refs.mapillary }, 'bottom-right')
     map.addControl(overlay)
     viewer = new Viewer({
