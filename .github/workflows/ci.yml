@@ -59,6 +59,7 @@ jobs:
           MAPBOX_ACCESS_TOKEN: ${{ vars.MAPBOX_ACCESS_TOKEN }}
           MAPTILER_KEY: ${{ vars.MAPTILER_KEY }}
           BASE_URL: ${{ vars.BASE_URL }}
+          MAPILLARY_ACCESS_TOKEN: ${{ vars.MAPILLARY_ACCESS_TOKEN }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
