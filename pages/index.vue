@@ -202,9 +202,7 @@ export default {
           type: 'vector',
           tiles: [
             `https://tiles.mapillary.com/maps/vtp/mly_map_feature_traffic_sign/2/{z}/{x}/{y}?access_token=${process.env.MAPILLARY_ACCESS_TOKEN}`
-          ],
-          minzoom: 6,
-          maxzoom: 14
+          ]
         })
         map.addLayer({
           id: 'signs',
