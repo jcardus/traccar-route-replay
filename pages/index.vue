@@ -49,6 +49,9 @@
         <label for="follow">{{ $t('Follow vehicle') }}</label>
       </div>
     </div>
+    <div ref="speedometer" class="mapboxgl-ctrl">
+      <speedometer :speed="route[i] && route[i].speed * 1.852" />
+    </div>
     <div ref="styleSwitcher">
       <style-switcher @changed="styleChanged" />
     </div>
@@ -74,6 +77,7 @@ import { Viewer } from 'mapillary-js'
 import { closest } from '@/utils'
 import StyleSwitcher from '@/components/style-switcher.vue'
 import { getImage, init } from '@/utils/mapillary'
+import Speedometer from '@/components/speedometer.vue'
 const overlay = new MapboxOverlay({ layers: [] })
 
 mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
@@ -85,7 +89,7 @@ const boundsPadding = 50 // px
 
 export default {
   name: 'IndexPage',
-  components: { Loading, StyleSwitcher },
+  components: { Speedometer, Loading, StyleSwitcher },
   data () {
     return {
       imgId: 0,
@@ -146,12 +150,10 @@ export default {
       })
       if (this.follow) {
         const camera = map.getFreeCameraOptions()
-        // set the position and altitude of the camera
         camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
           [this.route[this.i].longitude, this.route[this.i].latitude - 0.05],
           cameraAltitude
         )
-        // tell the camera to look at a point along the route
         camera.lookAtPoint(this.path[this.i])
         map.setFreeCameraOptions(camera)
       }
@@ -239,6 +241,7 @@ export default {
     map.on('load', this.mapLoaded)
     map.on('styleimagemissing', this.styleImageMissing)
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-right')
+    map.addControl({ onAdd: () => this.$refs.speedometer }, 'top-right')
     map.addControl(new mapboxgl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.styleSwitcher })
     map.addControl({ onAdd: () => this.$refs.mapillary }, 'bottom-right')
@@ -257,12 +260,13 @@ export default {
       }
     },
     checkImage () {
-      const image = getImage(this.path[this.i], this.route[this.i].course)
+      const i = this.i
+      const image = getImage(this.path[i], this.route[i].course)
       if (image.id && this.imgTime !== 'loading...') {
         this.imgTime = 'loading...'
         this.imgId = image.id
         viewer.moveTo(image.id)
-          .then(() => { this.imgTime = new Date(this.route[this.i].fixTime).toLocaleString() })
+          .then(() => { this.imgTime = new Date(this.route[i].fixTime).toLocaleString() })
           .catch((e) => { this.imgTime = e.message })
         // viewer.setCenter(this.route[this.i].course)
       }

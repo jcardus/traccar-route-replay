@@ -9,7 +9,7 @@ const baseUrl = `https://graph.mapillary.com/images?access_token=${
   process.env.MAPILLARY_ACCESS_TOKEN}&fields=computed_geometry,computed_compass_angle,id,thumb_256_url&limit=5000`
 let bboxes
 const images = {}
-const cellSide = 1.5
+const cellSide = 2
 const maxImageDistance = 20 // meters
 export function init (bounds, path, map) {
   const { features } = squareGrid(bounds, cellSide, { mask: lineString(path) })

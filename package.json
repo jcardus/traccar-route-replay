@@ -1,6 +1,6 @@
 {
   "name": "traccar-route-replay",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "scripts": {
     "dev": "nuxt",
@@ -29,6 +29,7 @@
     "mapillary-js": "^4.1.1",
     "nuxt": "^2.15.8",
     "vue": "^2.7.10",
+    "vue-google-charts": "^1.1.0",
     "vue-loading-overlay": "^3.4.3",
     "vue-server-renderer": "^2.7.10",
     "vue-template-compiler": "^2.7.10",
