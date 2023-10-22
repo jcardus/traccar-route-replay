@@ -11,7 +11,9 @@ export default {
   env: {
     MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN,
     MAPTILER_KEY: process.env.MAPTILER_KEY,
-    COUNTRY: process.env.COUNTRY
+    COUNTRY: process.env.COUNTRY,
+    MAPILLARY_ACCESS_TOKEN: process.env.MAPILLARY_ACCESS_TOKEN,
+    DEBUG_BOXES: process.env.DEBUG_BOXES
   },
 
   // Global page headers: https://go.nuxtjs.dev/config-head

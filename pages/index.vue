@@ -12,9 +12,19 @@
       </div>
       <div class="mapboxgl-ctrl-timeline__control" style="flex-grow: 1">
         <button
-          class="mapboxgl-ctrl-timeline__toggler"
-          :class="playing ? 'running' : ''"
+          class="mapboxgl-ctrl-icon svg-button"
+          style="background-image: url('/backward.svg')"
+          @click="(i - 1 >= 0) && i--"
+        />
+        <button
+          class="mapboxgl-ctrl-icon svg-button"
+          :style="`background-image: url('/${playing ? 'pause' : 'play'}.svg')`"
           @click="playing = !playing"
+        />
+        <button
+          class="mapboxgl-ctrl-icon svg-button"
+          style="background-image: url('/forward.svg')"
+          @click="(i + 1 < path.length) && i++"
         />
         <input
           ref="sliderInput"
@@ -29,7 +39,7 @@
       <div class="mapboxgl-ctrl-timeline__label">
         {{ timestamps[i] && new Date(timestamps[i]).toLocaleString() }}
       </div>
-      <div class="ctrl-item">
+      <div class="mapboxgl-ctrl-timeline__label">
         <select id="speeds" v-model="playSpeed" style="font-size: 1rem;">
           <option v-for="option in speeds" :key="option.value" :value="option.value">
             {{ option.text }}
@@ -42,28 +52,32 @@
     <div ref="styleSwitcher">
       <style-switcher @changed="styleChanged" />
     </div>
-    <canvas ref="sliderLine" height="40" width="10000" />
+    <div ref="mapillary" class="mapboxgl-ctrl" style="width: 256px; height: 192px">
+      <img :src="imgSrc" alt="" @error="imgLoaded=true" @load="imgLoaded=true">
+    </div>
+    <div ref="mapillary2" class="mapboxgl-ctrl" style="width: 256px; height: 192px" />
+    <canvas ref="sliderLine" style="position: absolute; left:-100000px" height="40" width="10000" />
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import bbox from '@turf/bbox'
-import { lineString } from '@turf/helpers'
+import { lineString, points } from '@turf/helpers'
 import { MapboxOverlay } from '@deck.gl/mapbox'
 import Loading from 'vue-loading-overlay'
 import { ScenegraphLayer } from '@deck.gl/mesh-layers'
 import mapboxgl from 'mapbox-gl'
-// import maplibregl from 'maplibre-gl'
+import { Viewer } from 'mapillary-js'
 import { closest } from '@/utils'
-import { fitBounds } from '@/utils/options'
 import StyleSwitcher from '@/components/style-switcher.vue'
-
+import { getImage, init } from '@/utils/mapillary'
 const overlay = new MapboxOverlay({ layers: [] })
 
 mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
 const cameraAltitude = 2000
 let map
+let viewer
 
 const MODEL_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/google-3d/truck.gltf'
 
@@ -72,6 +86,8 @@ export default {
   components: { Loading, StyleSwitcher },
   data () {
     return {
+      imgSrc: '',
+      imgLoaded: true,
       speeds: [
         { text: '1x', value: 400 },
         { text: '2x', value: 200 },
@@ -108,40 +124,21 @@ export default {
         map.getSource('route').setData(lineString(this.path.slice(0, this.i)))
       }
       overlay.setProps({
-        layers: [
-          /* new TripsLayer({
-            id: 'trips',
-            data: [{
-              path: this.path,
-              timestamps: this.timestamps
-            }],
-            getPath: d => d.path,
-            getTimestamps: d => d.timestamps,
-            opacity: 0.9,
-            widthMinPixels: 4,
-            rounded: true,
-            joinRounded: true,
-            trailLength: this.timestamps.slice(-1)[0] - this.timestamps[0],
-            shadowEnabled: true,
-            getColor: [253, 128, 93],
-            currentTime: this.timestamps[this.i]
-          }), */
-          new ScenegraphLayer({
-            id: 'truck',
-            data: [{
-              point: this.path[this.i],
-              heading: this.route[this.i].course,
-              altitude: map.queryTerrainElevation(this.path[this.i])
-            }],
-            scenegraph: MODEL_URL,
-            sizeScale: 10,
-            getPosition: d => d.point,
-            getTranslation: d => [0, 0, d.altitude],
-            getOrientation: d => [0, 180 - d.heading, 90],
-            _lighting: 'pbr',
-            sizeMinPixels: 8
-          })
-        ]
+        layers: [new ScenegraphLayer({
+          id: 'truck',
+          data: [{
+            point: this.path[this.i],
+            heading: this.route[this.i].course,
+            altitude: map.queryTerrainElevation(this.path[this.i])
+          }],
+          scenegraph: MODEL_URL,
+          sizeScale: 10,
+          getPosition: d => d.point,
+          getTranslation: d => [0, 0, d.altitude],
+          getOrientation: d => [0, 180 - d.heading, 90],
+          _lighting: 'pbr',
+          sizeMinPixels: 10
+        })]
       })
       if (this.follow) {
         const camera = map.getFreeCameraOptions()
@@ -154,13 +151,17 @@ export default {
         camera.lookAtPoint(this.path[this.i])
         map.setFreeCameraOptions(camera)
       }
+      this.checkImage()
     },
     path () {
       this.loading = false
       if (this.path && this.path.length) {
         map.getSource('route').setData(lineString(this.path))
-        map.fitBounds(bbox(lineString(this.path)), fitBounds)
+        const bounds = bbox(points(this.path))
+        map.fitBounds(bounds)
         this.updateSliderBackground()
+        init(bounds, this.path, map)
+        this.checkImage()
       }
     },
     playing () {
@@ -210,9 +211,21 @@ export default {
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-right')
     map.addControl(new mapboxgl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.styleSwitcher })
+    // map.addControl({ onAdd: () => this.$refs.mapillary }, 'bottom-right')
+    map.addControl({ onAdd: () => this.$refs.mapillary2 }, 'bottom-right')
     map.addControl(overlay)
+    viewer = new Viewer({ accessToken: process.env.MAPILLARY_ACCESS_TOKEN, container: this.$refs.mapillary2 })
   },
   methods: {
+    checkImage () {
+      const image = getImage(this.path[this.i], this.route[this.i].course)
+      if (image.thumb_256_url && this.imgSrc !== image.thumb_256_url && this.imgLoaded) {
+        this.imgLoaded = false
+        this.imgSrc = image.thumb_256_url
+        viewer.moveTo(image.id)
+        // viewer.setCenter(this.route[this.i].course)
+      }
+    },
     styleChanged (style) {
       map.setStyle(style.uri)
     },
@@ -332,19 +345,14 @@ export default {
 }
 </script>
 <style>
-.ctrl-item {
-  --padding: 0.3rem;
-  --border: 1px solid #0002;
-  --width: auto;
-  --color-bg: #fff;
-  --color-text: #333;
-  --color-track: #0001;
-  background: var(--color-bg);
-  display: flex;
-  align-items: stretch;
-  color: var(--color-text);
-  border-left: var(--border);
-  padding: var(--padding) calc(2 * var(--padding));
-  font-size: 1rem;
+.svg-button {
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  pointer-events: auto !important;
+  height: 32px !important;
+  background-color: red;
 }
 </style>
