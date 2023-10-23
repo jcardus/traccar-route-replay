@@ -25,6 +25,10 @@
         <input id="signs" type="checkbox" @click="$store.commit('TOGGLE_SHOW_SIGNS')">
         <label for="signs">{{ $t('Signs') }}</label>
       </button>
+      <button style="border-top: 1px solid #0002;">
+        <input id="buildings" type="checkbox" @click="$store.commit('TOGGLE_SHOW_BUILDINGS')">
+        <label for="buildings">{{ $t('Buildings') }}</label>
+      </button>
     </div>
   </div>
 </template>
