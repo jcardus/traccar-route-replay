@@ -6,7 +6,7 @@ export const state = {
   headings: [],
   route: [],
   geofences: [],
-  showTerrain: false,
+  showTerrain: true,
   showSigns: false,
   showBuildings: false
 }
@@ -41,15 +41,9 @@ export const actions = {
   }
 }
 export const mutations = {
-  TOGGLE_TERRAIN (state) {
-    state.showTerrain = !state.showTerrain
-  },
-  TOGGLE_SHOW_SIGNS (state) {
-    state.showSigns = !state.showSigns
-  },
-  TOGGLE_SHOW_BUILDINGS (state) {
-    state.showBuildings = !state.showBuildings
-  },
+  SET_TERRAIN (state, value) { state.showTerrain = value },
+  SET_BUILDINGS: (state, value) => { state.showBuildings = value },
+  SET_SIGNS: (state, value) => { state.showSigns = value },
   SET_SESSION (state, session) {
     state.session = session
   },

@@ -18,15 +18,15 @@
         {{ style.title }}
       </button>
       <button style="border-top: 1px solid #0002;">
-        <input id="terrain" type="checkbox" @click="$store.commit('TOGGLE_TERRAIN')">
+        <input id="terrain" v-model="showTerrain" type="checkbox">
         <label for="terrain">{{ $t('Terrain') }}</label>
       </button>
       <button style="border-top: 1px solid #0002;">
-        <input id="signs" type="checkbox" @click="$store.commit('TOGGLE_SHOW_SIGNS')">
+        <input id="signs" v-model="showSigns" type="checkbox">
         <label for="signs">{{ $t('Signs') }}</label>
       </button>
       <button style="border-top: 1px solid #0002;">
-        <input id="buildings" type="checkbox" @click="$store.commit('TOGGLE_SHOW_BUILDINGS')">
+        <input id="buildings" v-model="showBuildings" type="checkbox">
         <label for="buildings">{{ $t('Buildings') }}</label>
       </button>
     </div>
@@ -52,6 +52,20 @@ export default {
     return {
       opened: false,
       active: 'Streets'
+    }
+  },
+  computed: {
+    showTerrain: {
+      get () { return this.$store.getters.showTerrain },
+      set (value) { this.$store.commit('SET_TERRAIN', value) }
+    },
+    showSigns: {
+      get () { return this.$store.getters.showSigns },
+      set (value) { this.$store.commit('SET_SIGNS', value) }
+    },
+    showBuildings: {
+      get () { return this.$store.getters.showBuildings },
+      set (value) { this.$store.commit('SET_BUILDINGS', value) }
     }
   },
   methods: {

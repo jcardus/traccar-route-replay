@@ -74,7 +74,7 @@ import Loading from 'vue-loading-overlay'
 import { ScenegraphLayer } from '@deck.gl/mesh-layers'
 import mapboxgl from 'mapbox-gl'
 import { Viewer } from 'mapillary-js'
-import { closest } from '@/utils'
+import { closest, green } from '@/utils'
 import StyleSwitcher from '@/components/style-switcher.vue'
 import { getImage, init } from '@/utils/mapillary'
 import Speedometer from '@/components/speedometer.vue'
@@ -204,7 +204,6 @@ export default {
     },
     showBuildings () {
       if (this.showBuildings) {
-        console.log('buildings', this.showBuildings)
         // Insert the layer beneath any symbol layer.
         const layers = map.getStyle().layers
         const labelLayerId = layers.find(
@@ -294,7 +293,7 @@ export default {
       localStorage.setItem('center', JSON.stringify(map.getCenter()))
       localStorage.setItem('zoom', map.getZoom())
     })
-    map.on('style.load', this.mapLoaded)
+    map.on('style.load', this.styleLoaded)
     map.on('styleimagemissing', this.styleImageMissing)
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-right')
     map.addControl({ onAdd: () => this.$refs.speedometer }, 'top-right')
@@ -362,7 +361,7 @@ export default {
       context.strokeStyle = {
         '-1': '#979797',
         0: '#ff0022',
-        1: '#3D993D',
+        1: green,
         2: '#F9B218'
       }[status]
       context.lineWidth = 10
@@ -378,10 +377,13 @@ export default {
       this.drawLine(context, currentLinePosition, end, currentStatus)
       return end
     },
-    mapLoaded () {
+    styleLoaded () {
       this.addLayers()
       this.$store.dispatch('getPath')
       process.env.COUNTRY && this.setWorldView(process.env.COUNTRY)
+      this.$store.commit('SET_TERRAIN', false)
+      this.$store.commit('SET_SIGNS', false)
+      this.$store.commit('SET_BUILDINGS', false)
     },
     setWorldView (worldview) {
       map.setFilter('admin-0-boundary-disputed', [
@@ -425,7 +427,7 @@ export default {
         type: 'line',
         source: 'route',
         paint: {
-          'line-color': '#888',
+          'line-color': green,
           'line-width': 8
         },
         layout: {
