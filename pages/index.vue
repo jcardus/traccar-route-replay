@@ -81,11 +81,12 @@ import Speedometer from '@/components/speedometer.vue'
 const overlay = new MapboxOverlay({ layers: [] })
 
 mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
-const cameraAltitude = 2000
 let map
 let viewer
 const MODEL_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/google-3d/truck.gltf'
 const boundsPadding = 50 // px
+const maxAltitude = 400000
+const maxLatitudeDistance = 6
 
 export default {
   name: 'IndexPage',
@@ -112,6 +113,9 @@ export default {
   },
   computed: {
     ...mapGetters(['devices', 'path', 'timestamps', 'route', 'showTerrain', 'showSigns']),
+    cameraAltitude () {
+      return maxAltitude / this.playSpeed
+    },
     max () {
       return this.timestamps.slice(-1)[0]
     },
@@ -151,8 +155,8 @@ export default {
       if (this.follow) {
         const camera = map.getFreeCameraOptions()
         camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
-          [this.route[this.i].longitude, this.route[this.i].latitude - 0.05],
-          cameraAltitude
+          [this.route[this.i].longitude, this.route[this.i].latitude - (maxLatitudeDistance / this.playSpeed)],
+          this.cameraAltitude
         )
         camera.lookAtPoint(this.path[this.i])
         map.setFreeCameraOptions(camera)
@@ -262,7 +266,7 @@ export default {
     checkImage () {
       const i = this.i
       const image = getImage(this.path[i], this.route[i].course)
-      if (image.id && this.imgTime !== 'loading...') {
+      if (image.id && this.imgId !== image.id && this.imgTime !== 'loading...') {
         this.imgTime = 'loading...'
         this.imgId = image.id
         viewer.moveTo(image.id)
