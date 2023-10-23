@@ -6,7 +6,7 @@ export const state = {
   headings: [],
   route: [],
   geofences: [],
-  showTerrain: true,
+  showTerrain: false,
   showSigns: false,
   showBuildings: false
 }

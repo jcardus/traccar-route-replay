@@ -78,12 +78,12 @@ import { closest, green } from '@/utils'
 import StyleSwitcher from '@/components/style-switcher.vue'
 import { getImage, init } from '@/utils/mapillary'
 import Speedometer from '@/components/speedometer.vue'
+import { get3dModel } from '@/utils/models3d'
 const overlay = new MapboxOverlay({ layers: [] })
 
 mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
 let map
 let viewer
-const MODEL_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/google-3d/truck.gltf'
 const boundsPadding = 50 // px
 const maxAltitude = 400000
 const maxLatitudeDistance = 6
@@ -135,6 +135,7 @@ export default {
       if (this.i > 1 && map.getSource('route')) {
         map.getSource('route').setData(lineString(this.path.slice(0, this.i)))
       }
+      const model = get3dModel(this.device.category)
       overlay.setProps({
         layers: [new ScenegraphLayer({
           id: 'truck',
@@ -143,8 +144,8 @@ export default {
             heading: this.route[this.i].course,
             altitude: map.queryTerrainElevation(this.path[this.i])
           }],
-          scenegraph: MODEL_URL,
-          sizeScale: 10,
+          scenegraph: (model && model.scenegraph) || 'truck.gltf',
+          sizeScale: (model && model.sizeScale) || 1,
           getPosition: d => d.point,
           getTranslation: d => [0, 0, d.altitude],
           getOrientation: d => [0, 180 - d.heading, 90],
