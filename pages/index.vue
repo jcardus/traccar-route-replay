@@ -138,19 +138,19 @@ export default {
       const model = get3dModel(this.device.category)
       overlay.setProps({
         layers: [new ScenegraphLayer({
-          id: 'truck',
+          id: model,
           data: [{
             point: this.path[this.i],
             heading: this.route[this.i].course,
             altitude: map.queryTerrainElevation(this.path[this.i])
           }],
-          scenegraph: (model && model.scenegraph) || 'truck.gltf',
-          sizeScale: (model && model.sizeScale) || 1,
+          scenegraph: model.scenegraph,
+          sizeScale: model.sizeScale,
           getPosition: d => d.point,
           getTranslation: d => [0, 0, d.altitude],
-          getOrientation: d => [0, 180 - d.heading, 90],
+          getOrientation: model.getOrientation,
           _lighting: 'pbr',
-          sizeMinPixels: 10
+          sizeMinPixels: 12
         })]
       })
       if (this.follow) {
