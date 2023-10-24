@@ -1,3 +1,5 @@
+import { prettify } from '@/utils'
+
 export const state = {
   session: null,
   devices: [],
@@ -33,7 +35,8 @@ export const actions = {
     const to = new Date(query.get('to') || new Date().getTime() + 1000 * 60 * 60 * 24).toISOString()
     await dispatch('getUserData')
     const device = state.devices.find(d => d.id === parseInt(query.get('deviceId'))) || state.devices[0]
-    const route = await this.$axios.$get(`/reports/route?deviceId=${device.id}&from=${from}&to=${to}&type=route&type=trips`)
+    const _route = await this.$axios.$get(`/reports/route?deviceId=${device.id}&from=${from}&to=${to}`)
+    const route = prettify(_route, 4)
     commit('SET_ROUTE', route)
     commit('SET_PATH', route.map(p => [p.longitude, p.latitude]))
     commit('SET_TIMESTAMPS', route.map(p => new Date(p.fixTime).getTime()))

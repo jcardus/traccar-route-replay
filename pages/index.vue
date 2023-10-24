@@ -150,7 +150,7 @@ export default {
           getTranslation: d => [0, 0, d.altitude],
           getOrientation: model.getOrientation,
           _lighting: 'pbr',
-          sizeMinPixels: 12
+          sizeMinPixels: model.sizeMinPixels || 12
         })]
       })
       if (this.follow) {

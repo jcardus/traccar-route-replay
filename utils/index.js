@@ -1,6 +1,9 @@
 import circle from '@turf/circle'
 import { parse } from 'wellknown'
-
+import distance from '@turf/distance'
+import midpoint from '@turf/midpoint'
+import bearing from '@turf/bearing'
+const maxDistance = 0.03 // kms
 export const green = '#3D993D'
 export function closest (arr, target) {
   if (!arr || !arr.length) { return null }
@@ -52,4 +55,26 @@ export const reverseCoordinates = (it) => {
     ...it,
     coordinates: reverseCoordinates(it.coordinates)
   }
+}
+
+export function prettify (_route, depth = 1) {
+  const result = _route.map((p, i, a) => {
+    const p1 = [p.longitude, p.latitude]
+    if (a[i + 1]) {
+      const p2 = [a[i + 1].longitude, a[i + 1].latitude]
+      const dist = distance(p1, p2)
+      if (dist > maxDistance) {
+        return [p, {
+          longitude: midpoint(p1, p2).geometry.coordinates[0],
+          latitude: midpoint(p1, p2).geometry.coordinates[1],
+          fixTime: new Date(p.fixTime).getTime() + (new Date(a[i + 1].fixTime) - new Date(p.fixTime)) / 2,
+          speed: p.speed,
+          course: bearing(p1, p2),
+          attributes: { ignition: p.attributes.ignition }
+        }]
+      }
+    }
+    return p
+  }).flat()
+  return depth ? prettify(result, depth - 1) : result
 }

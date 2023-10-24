@@ -1,6 +1,6 @@
 {
   "name": "traccar-route-replay",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "private": true,
   "scripts": {
     "dev": "nuxt",
@@ -19,8 +19,11 @@
     "@nuxtjs/axios": "^5.13.6",
     "@nuxtjs/i18n": "^7.3.1",
     "@turf/bbox": "^6.5.0",
+    "@turf/bearing": "^6.5.0",
     "@turf/circle": "^6.5.0",
+    "@turf/distance": "^6.5.0",
     "@turf/helpers": "^6.5.0",
+    "@turf/midpoint": "^6.5.0",
     "@turf/nearest-point": "^6.5.0",
     "@turf/square-grid": "^6.5.0",
     "core-js": "3.33.1",
