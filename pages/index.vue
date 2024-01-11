@@ -26,6 +26,9 @@
           style="background-image: url('forward.svg')"
           @click="(i + 1 < path.length) && i++"
         />
+        <div class="mapboxgl-ctrl-timeline__label">
+          <input v-model="from" type="datetime-local">
+        </div>
         <input
           ref="sliderInput"
           v-model="currentTime"
@@ -35,9 +38,9 @@
           :max="max"
           :style="`background-image: url('${sliderBackground}');`"
         >
-      </div>
-      <div class="mapboxgl-ctrl-timeline__label">
-        {{ timestamps[i] && new Date(timestamps[i]).toLocaleString() }}
+        <div class="mapboxgl-ctrl-timeline__label">
+          <input v-model="to" type="datetime-local">
+        </div>
       </div>
       <div class="mapboxgl-ctrl-timeline__label">
         <select id="speeds" v-model="playSpeed" style="font-size: 1rem;">
@@ -48,6 +51,9 @@
         <input id="follow" v-model="follow" type="checkbox">
         <label for="follow">{{ $t('Follow vehicle') }}</label>
       </div>
+    </div>
+    <div ref="datetime" class="mapboxgl-ctrl mapboxgl-ctrl-group mapboxgl-ctrl-timeline__label" style="padding: 3px">
+      {{ timestamps[i] && new Date(timestamps[i]).toLocaleString() }}
     </div>
     <div ref="speedometer" class="mapboxgl-ctrl">
       <speedometer :speed="route[i] && route[i].speed * 1.852" />
@@ -84,7 +90,7 @@ const overlay = new MapboxOverlay({ layers: [] })
 mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
 let map
 let viewer
-const boundsPadding = 50 // px
+const boundsPadding = 100 // px
 const maxAltitude = 400000
 const maxLatitudeDistance = 6
 
@@ -128,9 +134,27 @@ export default {
     currentTime: {
       get () { return this.timestamps[this.i] },
       set (time) { this.i = closest(this.timestamps, time) }
+    },
+    from: {
+      get () { return this.$store.state.from && this.$store.state.from.replace('Z', '') },
+      set (value) { this.$store.commit('SET_FROM', value) }
+    },
+    to: {
+      get () { return this.$store.state.to && this.$store.state.to.replace('Z', '') },
+      set (value) { this.$store.commit('SET_TO', value) }
     }
   },
   watch: {
+    async from () {
+      this.loading = true
+      await this.$store.dispatch('getPath')
+      this.loading = false
+    },
+    async to () {
+      this.loading = true
+      await this.$store.dispatch('getPath')
+      this.loading = false
+    },
     i () {
       if (this.i > 1 && map.getSource('route')) {
         map.getSource('route').setData(lineString(this.path.slice(0, this.i)))
@@ -297,6 +321,7 @@ export default {
     map.on('style.load', this.styleLoaded)
     map.on('styleimagemissing', this.styleImageMissing)
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-right')
+    map.addControl({ onAdd: () => this.$refs.datetime }, 'top-right')
     map.addControl({ onAdd: () => this.$refs.speedometer }, 'top-right')
     map.addControl(new mapboxgl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.styleSwitcher })

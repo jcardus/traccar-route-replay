@@ -10,7 +10,9 @@ export const state = {
   geofences: [],
   showTerrain: false,
   showSigns: false,
-  showBuildings: false
+  showBuildings: false,
+  from: null,
+  to: null
 }
 export const getters = {
   devices: state => state.devices,
@@ -31,12 +33,14 @@ export const actions = {
   },
   async getPath ({ commit, dispatch, state }) {
     const query = new URLSearchParams(window.location.search)
-    const from = new Date(query.get('from') || new Date().getTime() - 1000 * 60 * 60 * 24).toISOString()
-    const to = new Date(query.get('to') || new Date().getTime() + 1000 * 60 * 60 * 24).toISOString()
+    const from = new Date(state.from || query.get('from') || new Date().getTime() - 1000 * 60 * 60 * 24).toISOString()
+    const to = new Date(state.to || query.get('to') || new Date().getTime() + 1000 * 60 * 60 * 24).toISOString()
     await dispatch('getUserData')
     const device = state.devices.find(d => d.id === parseInt(query.get('deviceId'))) || state.devices[0]
     const _route = await this.$axios.$get(`/reports/route?deviceId=${device.id}&from=${from}&to=${to}`)
     const route = prettify(_route, 1)
+    if (!state.from) { commit('SET_FROM', from) }
+    if (!state.to) { commit('SET_TO', to) }
     commit('SET_ROUTE', route)
     commit('SET_PATH', route.map(p => [p.longitude, p.latitude]))
     commit('SET_TIMESTAMPS', route.map(p => new Date(p.fixTime).getTime()))
@@ -64,5 +68,11 @@ export const mutations = {
   },
   SET_GEOFENCES (state, geofences) {
     state.geofences = geofences
+  },
+  SET_FROM (state, from) {
+    state.from = from
+  },
+  SET_TO (state, to) {
+    state.to = to
   }
 }
