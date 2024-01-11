@@ -1,6 +1,6 @@
 {
   "name": "traccar-route-replay",
-  "version": "1.1.9",
+  "version": "1.2.1",
   "private": true,
   "scripts": {
     "dev": "nuxt",
@@ -22,6 +22,7 @@
     "@turf/bearing": "^6.5.0",
     "@turf/circle": "^6.5.0",
     "@turf/distance": "^6.5.0",
+    "@turf/flip": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/midpoint": "^6.5.0",
     "@turf/nearest-point": "^6.5.0",

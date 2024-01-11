@@ -74,12 +74,14 @@
 <script>
 import { mapGetters } from 'vuex'
 import bbox from '@turf/bbox'
-import { lineString, points } from '@turf/helpers'
+import { feature, featureCollection, lineString, points } from '@turf/helpers'
 import { MapboxOverlay } from '@deck.gl/mapbox'
 import Loading from 'vue-loading-overlay'
 import { ScenegraphLayer } from '@deck.gl/mesh-layers'
 import mapboxgl from 'mapbox-gl'
 import { Viewer } from 'mapillary-js'
+import { parse } from 'wellknown'
+import flip from '@turf/flip'
 import { closest, green } from '@/utils'
 import StyleSwitcher from '@/components/style-switcher.vue'
 import { getImage, init } from '@/utils/mapillary'
@@ -129,7 +131,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['devices', 'path', 'timestamps', 'route', 'showTerrain', 'showSigns', 'showBuildings']),
+    ...mapGetters(['devices', 'path', 'timestamps', 'route', 'showTerrain', 'showSigns', 'showBuildings', 'geofences']),
     cameraAltitude () {
       return maxAltitude / this.playSpeed
     },
@@ -156,6 +158,13 @@ export default {
     }
   },
   watch: {
+    geofences () {
+      const features = featureCollection(this.geofences.map((g) => {
+        const wkt = parse(g.area)
+        return feature(flip(wkt), { name: g.name })
+      }))
+      map.getSource('geofences').setData(features)
+    },
     async from () {
       this.loading = true
       await this.$store.dispatch('getPath')
@@ -470,6 +479,40 @@ export default {
         layout: {
           'line-join': 'round',
           'line-cap': 'round'
+        }
+      })
+      map.addSource('geofences', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          }
+        }
+      })
+      map.addLayer({
+        id: 'geofences',
+        type: 'fill',
+        source: 'geofences',
+        paint: {
+          'fill-color': 'Tomato',
+          'fill-opacity': 0.8
+        }
+      })
+      map.addLayer({
+        id: 'geofences-text',
+        type: 'symbol',
+        source: 'geofences',
+        layout: {
+          'text-size': 16,
+          'text-field': ['get', 'name'],
+          'text-allow-overlap': true
+        },
+        paint: {
+          'text-color': 'black',
+          'text-halo-color': 'white',
+          'text-halo-width': 1
         }
       })
     },
