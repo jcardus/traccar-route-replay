@@ -94,6 +94,17 @@ const boundsPadding = 100 // px
 const maxAltitude = 400000
 const maxLatitudeDistance = 6
 
+function getLocalDateString (myDate) {
+  if (myDate) {
+    return myDate.getFullYear() + '-' +
+      ('0' + (myDate.getMonth() + 1)).slice(-2) + '-' +
+      ('0' + myDate.getDate()).slice(-2) + 'T' +
+      ('0' + myDate.getHours()).slice(-2) + ':' +
+      ('0' + myDate.getMinutes()).slice(-2)
+  }
+  return null
+}
+
 export default {
   name: 'IndexPage',
   components: { Speedometer, Loading, StyleSwitcher },
@@ -136,11 +147,11 @@ export default {
       set (time) { this.i = closest(this.timestamps, time) }
     },
     from: {
-      get () { return this.$store.state.from && this.$store.state.from.replace('Z', '') },
+      get () { return getLocalDateString(this.$store.state.from && new Date(this.$store.state.from)) },
       set (value) { this.$store.commit('SET_FROM', value) }
     },
     to: {
-      get () { return this.$store.state.to && this.$store.state.to.replace('Z', '') },
+      get () { return getLocalDateString(this.$store.state.to && new Date(this.$store.state.to)) },
       set (value) { this.$store.commit('SET_TO', value) }
     }
   },
