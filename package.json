@@ -1,6 +1,6 @@
 {
   "name": "traccar-route-replay",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": true,
   "scripts": {
     "dev": "nuxt",
@@ -13,9 +13,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.9.31",
-    "@deck.gl/mapbox": "^8.9.31",
-    "@deck.gl/mesh-layers": "^8.9.31",
+    "@deck.gl/core": "8.9.33",
+    "@deck.gl/mapbox": "8.9.33",
+    "@deck.gl/mesh-layers": "8.9.33",
     "@nuxtjs/axios": "^5.13.6",
     "@nuxtjs/i18n": "^7.3.1",
     "@turf/bbox": "^6.5.0",
@@ -27,16 +27,16 @@
     "@turf/midpoint": "^6.5.0",
     "@turf/nearest-point": "^6.5.0",
     "@turf/square-grid": "^6.5.0",
-    "core-js": "3.33.1",
+    "core-js": "3.35.0",
     "mapbox-gl": "^2.15.0",
     "mapboxgl-timeline": "^1.0.2",
-    "mapillary-js": "^4.1.1",
-    "nuxt": "^2.15.8",
-    "vue": "^2.7.10",
+    "mapillary-js": "4.1.2",
+    "nuxt": "^2.17.2",
+    "vue": "^2.7.16",
     "vue-google-charts": "^1.1.0",
     "vue-loading-overlay": "^3.4.3",
-    "vue-server-renderer": "^2.7.10",
-    "vue-template-compiler": "^2.7.10",
+    "vue-server-renderer": "^2.7.16",
+    "vue-template-compiler": "^2.7.16",
     "wellknown": "^0.5.0"
   },
   "devDependencies": {

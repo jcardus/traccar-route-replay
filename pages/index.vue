@@ -458,29 +458,6 @@ export default {
       ])
     },
     addLayers () {
-      map.addSource('route', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: []
-          }
-        }
-      })
-      map.addLayer({
-        id: 'route',
-        type: 'line',
-        source: 'route',
-        paint: {
-          'line-color': green,
-          'line-width': 8
-        },
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round'
-        }
-      })
       map.addSource('geofences', {
         type: 'geojson',
         data: {
@@ -513,6 +490,29 @@ export default {
           'text-color': 'black',
           'text-halo-color': 'white',
           'text-halo-width': 1
+        }
+      })
+      map.addSource('route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          }
+        }
+      })
+      map.addLayer({
+        id: 'route',
+        type: 'line',
+        source: 'route',
+        paint: {
+          'line-color': green,
+          'line-width': 8
+        },
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
         }
       })
     },
