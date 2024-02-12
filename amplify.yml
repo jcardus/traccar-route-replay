@@ -1,0 +1,20 @@
+version: 1
+frontend:
+  config:
+    Node.js:
+      version: 16.x
+  phases:
+    preBuild:
+      commands:
+        - npm install
+    build:
+      commands:
+        - npm run generate
+  artifacts:
+    # IMPORTANT - Please verify your build output directory
+    baseDirectory: /dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
