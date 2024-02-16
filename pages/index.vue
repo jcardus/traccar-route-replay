@@ -116,6 +116,7 @@ export default {
       loading: false,
       playing: false,
       i: 0,
+      start: 0,
       playSpeed: 400,
       follow: false,
       sliderBackground: ''
@@ -167,10 +168,11 @@ export default {
       await this.$store.dispatch('getPath')
       this.loading = false
     },
+    start () {
+      this.updateRoute()
+    },
     i () {
-      if (this.i > 1 && map.getSource('route')) {
-        map.getSource('route').setData(lineString(this.path.slice(0, this.i)))
-      }
+      this.updateRoute()
       if (this.path[this.i]) {
         if (this.playing) {
           this.updateSlider()
@@ -375,13 +377,15 @@ export default {
       })
     this.$refs.noUiSlider.noUiSlider.on('update', ([from, to]) => {
       this.currentTime = to
-      const start = closest(this.timestamps, from)
-      if (start && map.getSource('route')) {
-        map.getSource('route').setData(lineString(this.path.slice(start)))
-      }
+      this.start = closest(this.timestamps, from)
     })
   },
   methods: {
+    updateRoute () {
+      if (this.start > 0 && this.i > this.start && map.getSource('route')) {
+        map.getSource('route').setData(lineString(this.path.slice(this.start, this.i)))
+      }
+    },
     updateSlider () {
       this.$refs.noUiSlider.noUiSlider.set([null, this.currentTime])
     },
@@ -557,8 +561,21 @@ export default {
         type: 'line',
         source: 'route',
         paint: {
-          'line-color': green,
-          'line-width': 8
+          'line-color': '#2d5f99',
+          'line-width': 10
+        },
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        }
+      })
+      map.addLayer({
+        id: 'routeCasing',
+        type: 'line',
+        source: 'route',
+        paint: {
+          'line-color': '#4882c5',
+          'line-width': 5
         },
         layout: {
           'line-join': 'round',
