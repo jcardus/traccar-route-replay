@@ -373,7 +373,13 @@ export default {
           max: this.max || 0
         }
       })
-    this.$refs.noUiSlider.noUiSlider.on('update', ([from, to]) => { this.currentTime = to })
+    this.$refs.noUiSlider.noUiSlider.on('update', ([from, to]) => {
+      this.currentTime = to
+      const start = closest(this.timestamps, from)
+      if (start && map.getSource('route')) {
+        map.getSource('route').setData(lineString(this.path.slice(start)))
+      }
+    })
   },
   methods: {
     updateSlider () {
