@@ -13,7 +13,7 @@
       <div class="mapboxgl-ctrl-timeline__control" style="flex-grow: 1">
         <button
           class="mapboxgl-ctrl-icon svg-button"
-          style="background-image: url('backward.svg')"
+          style="/*noinspection CssUnknownTarget*/background-image: url('backward.svg')"
           @click="(i - 1 >= 0) && i--"
         />
         <button
@@ -23,7 +23,7 @@
         />
         <button
           class="mapboxgl-ctrl-icon svg-button"
-          style="background-image: url('forward.svg')"
+          style="/*noinspection CssUnknownTarget*/background-image: url('forward.svg')"
           @click="(i + 1 < path.length) && i++"
         />
         <div class="mapboxgl-ctrl-timeline__label">
@@ -159,10 +159,11 @@ export default {
   },
   watch: {
     geofences () {
-      const features = featureCollection(this.geofences.map((g) => {
-        const wkt = parse(g.area)
-        return feature(flip(wkt), { name: g.name })
-      }))
+      const features = featureCollection(
+        this.geofences
+          .filter(g => parse(g.area))
+          .map(g => feature(flip(parse(g.area)), { name: g.name }))
+      )
       map.getSource('geofences').setData(features)
     },
     async from () {
@@ -179,24 +180,26 @@ export default {
       if (this.i > 1 && map.getSource('route')) {
         map.getSource('route').setData(lineString(this.path.slice(0, this.i)))
       }
-      const model = get3dModel(this.device.category)
-      overlay.setProps({
-        layers: [new ScenegraphLayer({
-          id: model,
-          data: [{
-            point: this.path[this.i],
-            heading: this.route[this.i].course,
-            altitude: map.queryTerrainElevation(this.path[this.i])
-          }],
-          scenegraph: model.scenegraph,
-          sizeScale: model.sizeScale,
-          getPosition: d => d.point,
-          getTranslation: d => [0, 0, d.altitude],
-          getOrientation: model.getOrientation,
-          _lighting: 'pbr',
-          sizeMinPixels: model.sizeMinPixels || 12
-        })]
-      })
+      if (this.model) {
+        const model = get3dModel(this.device.category)
+        overlay.setProps({
+          layers: [new ScenegraphLayer({
+            id: model,
+            data: [{
+              point: this.path[this.i],
+              heading: this.route[this.i].course,
+              altitude: map.queryTerrainElevation(this.path[this.i])
+            }],
+            scenegraph: model.scenegraph,
+            sizeScale: model.sizeScale,
+            getPosition: d => d.point,
+            getTranslation: d => [0, 0, d.altitude],
+            getOrientation: model.getOrientation,
+            _lighting: 'pbr',
+            sizeMinPixels: model.sizeMinPixels || 12
+          })]
+        })
+      }
       if (this.follow) {
         const camera = map.getFreeCameraOptions()
         camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
@@ -204,6 +207,13 @@ export default {
           this.cameraAltitude
         )
         camera.lookAtPoint(this.path[this.i])
+        map.setFreeCameraOptions(camera)
+      }
+      if (this.cockpit) {
+        const camera = map.getFreeCameraOptions()
+        camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
+          [this.route[this.i].longitude, this.route[this.i].latitude])
+        camera.setPitchBearing(180, this.route[this.i].course)
         map.setFreeCameraOptions(camera)
       }
       this.checkImage()
