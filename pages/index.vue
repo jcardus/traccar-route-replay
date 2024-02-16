@@ -29,15 +29,7 @@
         <div class="mapboxgl-ctrl-timeline__label">
           <input v-model="from" type="datetime-local">
         </div>
-        <input
-          ref="sliderInput"
-          v-model="currentTime"
-          class="mapboxgl-ctrl-timeline__slider"
-          type="range"
-          :min="min"
-          :max="max"
-          :style="`background-image: url('${sliderBackground}');`"
-        >
+        <div ref="noUiSlider" class="mapboxgl-ctrl-timeline__slider" :style="`background-image: url('${sliderBackground}');`" style="border: 0" />
         <div class="mapboxgl-ctrl-timeline__label">
           <input v-model="to" type="datetime-local">
         </div>
@@ -82,6 +74,8 @@ import mapboxgl from 'mapbox-gl'
 import { Viewer } from 'mapillary-js'
 import { parse } from 'wellknown'
 import flip from '@turf/flip'
+import * as noUiSlider from 'nouislider'
+import 'nouislider/dist/nouislider.css'
 import { closest, green } from '@/utils'
 import StyleSwitcher from '@/components/style-switcher.vue'
 import { getImage, init } from '@/utils/mapillary'
@@ -158,6 +152,9 @@ export default {
     }
   },
   watch: {
+    /* currentTime (value) {
+      this.$refs.noUiSlider.noUiSlider.set([value])
+    }, */
     geofences () {
       const features = featureCollection(
         this.geofences
@@ -180,8 +177,8 @@ export default {
       if (this.i > 1 && map.getSource('route')) {
         map.getSource('route').setData(lineString(this.path.slice(0, this.i)))
       }
-      if (this.model) {
-        const model = get3dModel(this.device.category)
+      if (this.path[this.i]) {
+        const model = get3dModel(this.device && this.device.category)
         overlay.setProps({
           layers: [new ScenegraphLayer({
             id: model,
@@ -199,24 +196,17 @@ export default {
             sizeMinPixels: model.sizeMinPixels || 12
           })]
         })
+        if (this.follow) {
+          const camera = map.getFreeCameraOptions()
+          camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
+            [this.route[this.i].longitude, this.route[this.i].latitude - (maxLatitudeDistance / this.playSpeed)],
+            this.cameraAltitude
+          )
+          camera.lookAtPoint(this.path[this.i])
+          map.setFreeCameraOptions(camera)
+        }
+        this.checkImage()
       }
-      if (this.follow) {
-        const camera = map.getFreeCameraOptions()
-        camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
-          [this.route[this.i].longitude, this.route[this.i].latitude - (maxLatitudeDistance / this.playSpeed)],
-          this.cameraAltitude
-        )
-        camera.lookAtPoint(this.path[this.i])
-        map.setFreeCameraOptions(camera)
-      }
-      if (this.cockpit) {
-        const camera = map.getFreeCameraOptions()
-        camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
-          [this.route[this.i].longitude, this.route[this.i].latitude])
-        camera.setPitchBearing(180, this.route[this.i].course)
-        map.setFreeCameraOptions(camera)
-      }
-      this.checkImage()
     },
     path () {
       this.loading = false
@@ -227,6 +217,13 @@ export default {
         this.updateSliderBackground()
         init(bounds, this.path, map)
         this.checkImage()
+        this.$refs.noUiSlider.noUiSlider.updateOptions({
+          range: {
+            min: this.min,
+            max: this.max
+          }
+        })
+        this.$refs.noUiSlider.noUiSlider.set([this.min, this.max])
       }
     },
     playing () {
@@ -336,7 +333,7 @@ export default {
     }
   },
   mounted () {
-    new ResizeObserver(this.updateSliderBackground).observe(this.$refs.sliderInput)
+    new ResizeObserver(this.updateSliderBackground).observe(this.$refs.noUiSlider)
     this.loading = true
     map = new mapboxgl.Map({
       container: 'map', // container ID
@@ -361,6 +358,25 @@ export default {
       accessToken: process.env.MAPILLARY_ACCESS_TOKEN,
       container: this.$refs.mapillaryViewer
     })
+    noUiSlider.create(this.$refs.noUiSlider,
+      {
+        start: [this.min, this.max],
+        connect: true,
+        tooltips: [
+          { to: value => new Date(value).toLocaleString() },
+          { to: value => new Date(value).toLocaleString() }
+        ],
+        pips: {
+          mode: 'positions',
+          values: [0, 50, 100],
+          format: { to: value => new Date(value).toLocaleString() }
+        },
+        range: {
+          min: this.min || 0,
+          max: this.max || 0
+        }
+      })
+    this.$refs.noUiSlider.noUiSlider.on('update', ([from, to]) => { this.currentTime = to })
   },
   methods: {
     styleImageMissing (e) {
@@ -372,14 +388,20 @@ export default {
     },
     checkImage () {
       const i = this.i
-      const image = getImage(this.path[i], this.route[i].course)
-      if (image.id && this.imgId !== image.id && this.imgTime !== 'loading...') {
-        this.imgTime = 'loading...'
-        this.imgId = image.id
-        viewer.moveTo(image.id)
-          .then(() => { this.imgTime = new Date(this.route[i].fixTime).toLocaleString() })
-          .catch((e) => { this.imgTime = e.message })
-        // viewer.setCenter(this.route[this.i].course)
+      if (this.route[i]) {
+        const image = getImage(this.path[i], this.route[i].course)
+        if (image.id && this.imgId !== image.id && this.imgTime !== 'loading...') {
+          this.imgTime = 'loading...'
+          this.imgId = image.id
+          viewer.moveTo(image.id)
+            .then(() => {
+              this.imgTime = new Date(this.route[i].fixTime).toLocaleString()
+            })
+            .catch((e) => {
+              this.imgTime = e.message
+            })
+          // viewer.setCenter(this.route[this.i].course)
+        }
       }
     },
     styleChanged (style) {
@@ -408,7 +430,7 @@ export default {
             status = 0
           }
         })
-        this.drawLine(context, linePosition, this.$refs.sliderInput.clientWidth, -1)
+        this.drawLine(context, linePosition, this.$refs.noUiSlider.clientWidth, -1)
         this.sliderBackground = canvas.toDataURL()
       }
     },
@@ -420,13 +442,13 @@ export default {
         1: green,
         2: '#F9B218'
       }[status]
-      context.lineWidth = 10
-      context.moveTo(start, 4)
-      context.lineTo(end, 4)
+      context.lineWidth = 20
+      context.moveTo(start, 10)
+      context.lineTo(end, 10)
       context.stroke()
     },
     getEndIndex (date) {
-      return this.$refs.sliderInput.clientWidth * (new Date(date) - this.min) / (this.max - this.min)
+      return this.$refs.noUiSlider.clientWidth * (new Date(date) - this.min) / (this.max - this.min)
     },
     newColoredLine (p, context, currentLinePosition, currentStatus) {
       const end = this.getEndIndex(p.fixTime)
@@ -547,5 +569,15 @@ export default {
   pointer-events: auto !important;
   height: 32px !important;
   background-color: red;
+}
+.noUi-horizontal .noUi-tooltip  {bottom: -150%;}
+.noUi-connect {
+  background: rgba(0,0,0,0.4);
+}
+.noUi-pips {
+  position: absolute;
+  color: #999;
+  text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+
 }
 </style>
