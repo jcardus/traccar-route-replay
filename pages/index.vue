@@ -11,9 +11,10 @@
         <b>{{ device && device.name }}</b>
       </div>
       <div class="mapboxgl-ctrl-timeline__control" style="flex-grow: 1">
+        <!--suppress CssUnknownTarget -->
         <button
           class="mapboxgl-ctrl-icon svg-button"
-          style="/*noinspection CssUnknownTarget*/background-image: url('backward.svg')"
+          style="background-image: url('backward.svg')"
           @click="(i - 1 >= 0) && i--"
         />
         <button
@@ -21,9 +22,10 @@
           :style="`background-image: url('${playing ? 'pause' : 'play'}.svg')`"
           @click="playing = !playing"
         />
+        <!--suppress CssUnknownTarget -->
         <button
           class="mapboxgl-ctrl-icon svg-button"
-          style="/*noinspection CssUnknownTarget*/background-image: url('forward.svg')"
+          style="background-image: url('forward.svg')"
           @click="(i + 1 < path.length) && i++"
         />
         <div class="mapboxgl-ctrl-timeline__label">
