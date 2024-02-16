@@ -1,6 +1,6 @@
 {
   "name": "traccar-route-replay",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "private": true,
   "scripts": {
     "dev": "nuxt",
@@ -13,9 +13,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@deck.gl/core": "8.9.33",
-    "@deck.gl/mapbox": "8.9.33",
-    "@deck.gl/mesh-layers": "8.9.33",
+    "@deck.gl/core": "8.9.34",
+    "@deck.gl/mapbox": "8.9.34",
+    "@deck.gl/mesh-layers": "8.9.34",
     "@nuxtjs/axios": "^5.13.6",
     "@nuxtjs/i18n": "^7.3.1",
     "@turf/bbox": "^6.5.0",
@@ -27,7 +27,7 @@
     "@turf/midpoint": "^6.5.0",
     "@turf/nearest-point": "^6.5.0",
     "@turf/square-grid": "^6.5.0",
-    "core-js": "3.35.0",
+    "core-js": "3.36.0",
     "mapbox-gl": "^2.15.0",
     "mapboxgl-timeline": "^1.0.2",
     "mapillary-js": "4.1.2",
