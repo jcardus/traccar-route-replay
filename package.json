@@ -1,6 +1,6 @@
 {
   "name": "traccar-route-replay",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "private": true,
   "scripts": {
     "dev": "nuxt",
@@ -17,7 +17,7 @@
     "@deck.gl/mapbox": "8.9.34",
     "@deck.gl/mesh-layers": "8.9.34",
     "@nuxtjs/axios": "^5.13.6",
-    "@nuxtjs/i18n": "^7.3.1",
+    "@nuxtjs/i18n": "7.3.1",
     "@turf/bbox": "^6.5.0",
     "@turf/bearing": "^6.5.0",
     "@turf/circle": "^6.5.0",

@@ -14,7 +14,7 @@
         <button
           class="mapboxgl-ctrl-icon svg-button"
           style="background-image: url('backward.svg')"
-          @click="(i - 1 >= 0) && i--"
+          @click="clickBackward"
         />
         <button
           class="mapboxgl-ctrl-icon svg-button"
@@ -24,7 +24,7 @@
         <button
           class="mapboxgl-ctrl-icon svg-button"
           style="background-image: url('forward.svg')"
-          @click="(i + 1 < path.length) && i++"
+          @click="clickForward"
         />
         <div class="mapboxgl-ctrl-timeline__label">
           <input v-model="from" type="datetime-local">
@@ -43,9 +43,6 @@
         <input id="follow" v-model="follow" type="checkbox">
         <label for="follow">{{ $t('Follow vehicle') }}</label>
       </div>
-    </div>
-    <div ref="datetime" class="mapboxgl-ctrl mapboxgl-ctrl-group mapboxgl-ctrl-timeline__label" style="padding: 3px">
-      {{ timestamps[i] && new Date(timestamps[i]).toLocaleString() }}
     </div>
     <div ref="speedometer" class="mapboxgl-ctrl">
       <speedometer :speed="route[i] && route[i].speed * 1.852" />
@@ -152,9 +149,6 @@ export default {
     }
   },
   watch: {
-    /* currentTime (value) {
-      this.$refs.noUiSlider.noUiSlider.set([value])
-    }, */
     geofences () {
       const features = featureCollection(
         this.geofences
@@ -178,6 +172,9 @@ export default {
         map.getSource('route').setData(lineString(this.path.slice(0, this.i)))
       }
       if (this.path[this.i]) {
+        if (this.playing) {
+          this.updateSlider()
+        }
         const model = get3dModel(this.device && this.device.category)
         overlay.setProps({
           layers: [new ScenegraphLayer({
@@ -348,7 +345,6 @@ export default {
     map.on('style.load', this.styleLoaded)
     map.on('styleimagemissing', this.styleImageMissing)
     map.addControl({ onAdd: () => this.$refs.slider }, 'top-right')
-    map.addControl({ onAdd: () => this.$refs.datetime }, 'top-right')
     map.addControl({ onAdd: () => this.$refs.speedometer }, 'top-right')
     map.addControl(new mapboxgl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.styleSwitcher })
@@ -366,6 +362,7 @@ export default {
           { to: value => new Date(value).toLocaleString() },
           { to: value => new Date(value).toLocaleString() }
         ],
+        step: 1,
         pips: {
           mode: 'positions',
           values: [0, 50, 100],
@@ -379,6 +376,21 @@ export default {
     this.$refs.noUiSlider.noUiSlider.on('update', ([from, to]) => { this.currentTime = to })
   },
   methods: {
+    updateSlider () {
+      this.$refs.noUiSlider.noUiSlider.set([null, this.currentTime])
+    },
+    clickBackward () {
+      if (this.i - 1 >= 0) {
+        this.i--
+        this.updateSlider()
+      }
+    },
+    clickForward () {
+      if (this.i + 1 < this.path.length) {
+        this.i++
+        this.updateSlider()
+      }
+    },
     styleImageMissing (e) {
       if (e.id.startsWith('regulatory')) {
         const img = new Image(20, 20)
