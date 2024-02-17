@@ -41,7 +41,7 @@
           </option>
         </select>
         <input id="follow" v-model="follow" type="checkbox">
-        <label for="follow">{{ $t('Follow vehicle') }}</label>
+        <label for="follow">{{ $t('Follow') }}</label>
       </div>
     </div>
     <div ref="speedometer" class="mapboxgl-ctrl">
@@ -214,7 +214,6 @@ export default {
         const bounds = bbox(points(this.path))
         map.fitBounds(bounds, { padding: boundsPadding })
         this.updateSliderBackground()
-        init(bounds, this.path, map)
         this.checkImage()
         this.$refs.noUiSlider.noUiSlider.updateOptions({
           range: {
@@ -227,6 +226,8 @@ export default {
     },
     playing () {
       if (this.playing) {
+        const bounds = bbox(points(this.path))
+        init(bounds, this.path, map)
         if (this.i + 1 === this.path.length) { this.i = 0 }
         this.play()
       }
@@ -412,7 +413,7 @@ export default {
       const i = this.i
       if (this.route[i]) {
         const image = getImage(this.path[i], this.route[i].course)
-        if (image.id && this.imgId !== image.id && this.imgTime !== 'loading...') {
+        if (image && image.id && this.imgId !== image.id && this.imgTime !== 'loading...') {
           this.imgTime = 'loading...'
           this.imgId = image.id
           viewer.moveTo(image.id)

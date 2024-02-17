@@ -28,6 +28,7 @@ export function init (bounds, path, map) {
 }
 
 export function getImage (p, course) {
+  if (!bboxes) { return }
   const filtered = bboxes.filter(f => booleanPointInPolygon(point(p), f))
   if (filtered.length) {
     const [box] = filtered
