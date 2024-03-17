@@ -226,8 +226,8 @@ export default {
     },
     playing () {
       if (this.playing) {
-        const bounds = bbox(points(this.path))
-        init(bounds, this.path, map)
+        // const bounds = bbox(points(this.path))
+        // init(bounds, this.path, map)
         if (this.i + 1 === this.path.length) { this.i = 0 }
         this.play()
       }
