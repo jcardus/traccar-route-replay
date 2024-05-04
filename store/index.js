@@ -36,7 +36,7 @@ export const actions = {
     const from = new Date(state.from || query.get('from') || new Date().getTime() - 1000 * 60 * 60 * 24).toISOString()
     const to = new Date(state.to || query.get('to') || new Date().getTime() + 1000 * 60 * 60 * 24).toISOString()
     await dispatch('getUserData')
-    const device = state.devices.filter(d => d).find(d => d.id === parseInt(query.get('deviceId'))) || state.devices[0]
+    const device = state.devices.filter(d => d && d.id).find(d => d.id === parseInt(query.get('deviceId'))) || state.devices[0]
     const _route = await this.$axios.$get(`/reports/route?deviceId=${device.id}&from=${from}&to=${to}`)
     const route = prettify(_route, 1)
     if (!state.from) { commit('SET_FROM', from) }

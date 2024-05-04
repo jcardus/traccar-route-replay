@@ -68,21 +68,18 @@ import { MapboxOverlay } from '@deck.gl/mapbox'
 import Loading from 'vue-loading-overlay'
 import { ScenegraphLayer } from '@deck.gl/mesh-layers'
 import mapboxgl from 'mapbox-gl'
-import { Viewer } from 'mapillary-js'
 import { parse } from 'wellknown'
 import flip from '@turf/flip'
 import * as noUiSlider from 'nouislider'
 import 'nouislider/dist/nouislider.css'
 import { closest, green } from '@/utils'
 import StyleSwitcher from '@/components/style-switcher.vue'
-import { getImage, init } from '@/utils/mapillary'
 import Speedometer from '@/components/speedometer.vue'
 import { get3dModel } from '@/utils/models3d'
 const overlay = new MapboxOverlay({ layers: [] })
 
 mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
 let map
-let viewer
 const boundsPadding = 100 // px
 const maxAltitude = 400000
 const maxLatitudeDistance = 6
@@ -204,7 +201,6 @@ export default {
           camera.lookAtPoint(this.path[this.i])
           map.setFreeCameraOptions(camera)
         }
-        this.checkImage()
       }
     },
     path () {
@@ -214,7 +210,6 @@ export default {
         const bounds = bbox(points(this.path))
         map.fitBounds(bounds, { padding: boundsPadding })
         this.updateSliderBackground()
-        this.checkImage()
         this.$refs.noUiSlider.noUiSlider.updateOptions({
           range: {
             min: this.min,
@@ -351,12 +346,7 @@ export default {
     map.addControl({ onAdd: () => this.$refs.speedometer }, 'top-right')
     map.addControl(new mapboxgl.NavigationControl())
     map.addControl({ onAdd: () => this.$refs.styleSwitcher })
-    map.addControl({ onAdd: () => this.$refs.mapillary }, 'bottom-right')
     map.addControl(overlay)
-    viewer = new Viewer({
-      accessToken: process.env.MAPILLARY_ACCESS_TOKEN,
-      container: this.$refs.mapillaryViewer
-    })
     noUiSlider.create(this.$refs.noUiSlider,
       {
         start: [this.min, this.max],
@@ -383,7 +373,7 @@ export default {
   },
   methods: {
     updateRoute () {
-      if (this.start > 0 && this.i > this.start && map.getSource('route')) {
+      if (this.start >= 0 && this.i > (this.start + 1) && map.getSource('route')) {
         map.getSource('route').setData(lineString(this.path.slice(this.start, this.i)))
       }
     },
@@ -407,24 +397,6 @@ export default {
         const img = new Image(20, 20)
         img.src = `signs/${e.id}.svg`
         img.onload = () => !map.hasImage(e.id) && map.addImage(e.id, img)
-      }
-    },
-    checkImage () {
-      const i = this.i
-      if (this.route[i]) {
-        const image = getImage(this.path[i], this.route[i].course)
-        if (image && image.id && this.imgId !== image.id && this.imgTime !== 'loading...') {
-          this.imgTime = 'loading...'
-          this.imgId = image.id
-          viewer.moveTo(image.id)
-            .then(() => {
-              this.imgTime = new Date(this.route[i].fixTime).toLocaleString()
-            })
-            .catch((e) => {
-              this.imgTime = e.message
-            })
-          // viewer.setCenter(this.route[this.i].course)
-        }
       }
     },
     styleChanged (style) {
