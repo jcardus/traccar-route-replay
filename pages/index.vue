@@ -50,12 +50,6 @@
     <div ref="styleSwitcher">
       <style-switcher @changed="styleChanged" />
     </div>
-    <div ref="mapillary" class="mapboxgl-ctrl" style="width: 256px; height: 192px">
-      <span style="position: absolute; z-index: 2; left: 50%; background: white; padding-left: 5px; padding-right: 5px">
-        <a style="color: black" target="_blank" :href="`https://www.mapillary.com/app/?pKey=${imgId}`">{{ imgTime }}</a>
-      </span>
-      <div ref="mapillaryViewer" style="width: 100%; height: 100%" />
-    </div>
     <canvas ref="sliderLine" style="position: absolute; left:-100000px" height="40" width="10000" />
   </div>
 </template>
@@ -100,6 +94,7 @@ export default {
   components: { Speedometer, Loading, StyleSwitcher },
   data () {
     return {
+      pitch: 30,
       imgId: 0,
       imgTime: '',
       imgSrc: '',
@@ -208,7 +203,7 @@ export default {
       if (this.path && this.path.length) {
         map.getSource('route').setData(lineString(this.path))
         const bounds = bbox(points(this.path))
-        map.fitBounds(bounds, { padding: boundsPadding })
+        map.fitBounds(bounds, { padding: boundsPadding, maxZoom: 15, pitch: this.pitch })
         this.updateSliderBackground()
         this.$refs.noUiSlider.noUiSlider.updateOptions({
           range: {
@@ -331,10 +326,11 @@ export default {
     new ResizeObserver(this.updateSliderBackground).observe(this.$refs.noUiSlider)
     this.loading = true
     map = new mapboxgl.Map({
-      container: 'map', // container ID
+      container: 'map',
       style: 'mapbox://styles/mapbox/streets-v12', // style URL
       zoom: localStorage.getItem('zoom'),
-      center: localStorage.getItem('center') ? JSON.parse(localStorage.getItem('center')) : [0, 0]
+      center: localStorage.getItem('center') ? JSON.parse(localStorage.getItem('center')) : [0, 0],
+      pitch: this.pitch
     })
     map.on('moveend', () => {
       localStorage.setItem('center', JSON.stringify(map.getCenter()))
@@ -580,7 +576,7 @@ export default {
 }
 .noUi-horizontal .noUi-tooltip  {bottom: -150%;}
 .noUi-connect {
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.3);
 }
 .noUi-pips {
   position: absolute;

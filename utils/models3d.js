@@ -5,6 +5,12 @@ export function get3dModel (category) {
       sizeScale: 50,
       getOrientation: d => [0, -d.heading, 90],
       sizeMinPixels: 20
+    },
+    boat: {
+      sizeScale: 1,
+      sizeMinPixels: 1.5,
+      scenegraph: 'models/boat.glb',
+      getOrientation: d => [0, 180 - d.heading, 90]
     }
   }[category] || {
     scenegraph: 'models/truck.gltf',
