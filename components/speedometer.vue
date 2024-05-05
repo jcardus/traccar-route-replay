@@ -4,8 +4,8 @@
       <path
         id="meter-bg-bar"
         d="M50.8884 250C37.0172 227.815 29 201.594 29 173.5C29 93.6949 93.6949 29 173.5 29C253.305 29 318 93.6949 318 173.5C318 201.594 309.983 227.815 296.112 250"
-        stroke="#CFF80B"
-        stroke-width="30"
+        stroke="#3D993D"
+        stroke-width="35"
         stroke-dasharray="615"
         :stroke-dashoffset="dashOffSet"
       />
