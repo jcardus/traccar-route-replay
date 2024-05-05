@@ -51,6 +51,7 @@
       <style-switcher @changed="styleChanged" />
     </div>
     <canvas ref="sliderLine" style="position: absolute; left:-100000px" height="40" width="10000" />
+    <speed-chart :style="`position: absolute; left:${graphLeft}px; top: 50px; width: ${graphWidth}px; height:100px`" />
   </div>
 </template>
 
@@ -111,7 +112,9 @@ export default {
       start: 0,
       playSpeed: 400,
       follow: false,
-      sliderBackground: ''
+      sliderBackground: '',
+      graphLeft: 0,
+      graphWidth: 0
     }
   },
   computed: {
@@ -423,7 +426,12 @@ export default {
         })
         this.drawLine(context, linePosition, this.$refs.noUiSlider.clientWidth, -1)
         this.sliderBackground = canvas.toDataURL()
+        this.updateGraphPosition()
       }
+    },
+    updateGraphPosition () {
+      this.graphLeft = this.$refs.noUiSlider.getBoundingClientRect().left
+      this.graphWidth = this.$refs.noUiSlider.getBoundingClientRect().width
     },
     drawLine (context, start, end, status) {
       context.beginPath()
